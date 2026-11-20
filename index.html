@@ -45,7 +45,7 @@ header h1{margin:0;line-height:0}header h1 img{height:40px;width:auto;display:bl
 .mode{position:fixed;left:12px;top:calc(var(--hh,150px) + 10px);z-index:900;display:grid;grid-template-columns:1fr 1fr 1fr;width:252px;background:var(--ink);border:0;border-radius:999px;padding:4px;box-shadow:0 4px 14px rgba(43,39,34,.18)}
 .mode i{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);background:var(--card);border-radius:999px;transition:transform .25s ease}
 .mode.pref i{transform:translateX(100%)}.mode.muni i{transform:translateX(200%)}
-.mode b{cursor:pointer;text-align:center;font-weight:500;font-size:13px;line-height:36px;color:#bfb3a3;transition:color .25s}
+.mode b{position:relative;z-index:1;cursor:pointer;text-align:center;font-weight:500;font-size:13px;line-height:36px;color:#bfb3a3;transition:color .25s}
 .mode b.on{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.mode i,.mode b{transition:none}}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:var(--sb)}
