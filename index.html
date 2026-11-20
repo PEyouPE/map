@@ -42,9 +42,12 @@ header h1{margin:0;line-height:0}header h1 img{height:40px;width:auto;display:bl
 .leaflet-control-attribution{font-size:10px;background:rgba(243,238,230,.85)!important;color:var(--sub)}
 .leaflet-control-attribution a{color:var(--sub)}
 .leaflet-bottom{bottom:calc(58px + var(--sb))}
-.seg{position:fixed;left:12px;top:calc(var(--st) + 126px);z-index:900;display:flex;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:3px}
-.seg button{border:0;background:none;border-radius:2px;min-height:38px;padding:0 14px;font-size:13px;font-weight:500;color:var(--sub)}
-.seg button[aria-pressed=true]{background:var(--ink);color:var(--card)}
+.mode{position:fixed;left:12px;top:calc(var(--st) + 126px);z-index:900;display:grid;grid-template-columns:1fr 1fr;width:200px;background:var(--ink);border:0;border-radius:999px;padding:4px;box-shadow:0 4px 14px rgba(43,39,34,.18)}
+.mode i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--card);border-radius:999px;transition:transform .25s ease}
+.mode.muni i{transform:translateX(100%)}
+.mode b{position:relative;text-align:center;font-weight:500;font-size:13px;line-height:36px;color:#bfb3a3;transition:color .25s}
+.mode b.on{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.mode i,.mode b{transition:none}}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:var(--sb)}
 nav button{border:0;background:none;height:58px;font:400 14px/1 var(--serif);letter-spacing:.03em;color:var(--sub);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative}
 nav button svg{width:21px;height:21px;stroke-width:1.6}
@@ -53,9 +56,35 @@ nav button[aria-current=true]::after{content:"";position:absolute;top:0;left:30%
 .panel{position:fixed;left:0;right:0;top:0;bottom:calc(58px + var(--sb));z-index:950;background:var(--bg);overflow-y:auto;padding:calc(var(--st) + 128px) 18px 32px;display:none}
 .panel.on{display:block}
 .panel h2{font:400 34px/1.1 var(--serif);margin:10px 0 16px;letter-spacing:0}
-.big{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--line);margin-bottom:20px}
-.big div{padding:12px 4px}.big div+div{border-left:1px solid var(--line);padding-left:12px}
-.big b{display:block;font:400 34px/1.1 var(--serif);color:var(--ink)}.big span{font-size:12px;color:var(--sub)}
+.hero{display:flex;gap:16px;align-items:center;border-top:1px solid var(--ink);padding:16px 0 8px}
+.hero svg{width:120px;height:120px;flex:none}
+.hero .st{flex:1;display:flex;flex-direction:column;gap:10px}
+.hero .k{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.hero .k i{width:10px;height:10px;border-radius:50%;flex:none;align-self:center}
+.hero .k b{font:400 32px/1 var(--serif)}.hero .k b small{font-size:18px}
+.hero .k span{font-size:12px;color:var(--sub)}
+.area{font-size:13px;color:var(--sub);border-bottom:1px solid var(--line);padding:4px 0 14px;margin-bottom:6px}.area b{font:400 20px var(--serif);color:var(--ink);margin:0 3px}
+.sec{border-top:1px solid var(--ink);margin-top:22px;padding-top:10px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.sec-h h3{font:400 22px/1.2 var(--serif);margin:0}.sec-h small{font-size:12px;color:var(--sub)}
+.sec-h button{border:1px solid var(--line);background:none;border-radius:2px;min-height:34px;padding:0 10px;font-size:12px;color:var(--ink)}
+.rg{padding:8px 0;border-bottom:1px solid var(--line)}
+.rg>b{font-weight:500;font-size:14px;white-space:nowrap}
+.rl{display:grid;grid-template-columns:5em minmax(0,1fr) 4.8em;gap:8px;align-items:center;font-size:12px;color:var(--sub);margin-top:4px}
+.rl span:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.bar.pf i{background:#3f5a6e}.bar.mu i{background:#8c5a45}
+.col{border-bottom:1px solid var(--line)}
+.col>button{width:100%;border:0;background:none;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) 5.5em;gap:4px 10px;align-items:center;padding:10px 0;min-height:56px}
+.col>button b{font-weight:500;font-size:14px;display:flex;align-items:center;gap:6px}
+.col>button .num{grid-row:span 2}
+.col .ck{font-size:11px;background:var(--ink);color:var(--card);border-radius:2px;padding:0 6px;font-weight:400}
+.col .chev{color:var(--sub);font-size:12px;transition:transform .2s}.col.open .chev{transform:rotate(180deg)}
+.det{display:none;padding:0 0 12px}.col.open .det{display:block}
+.det p{font-size:12px;color:var(--sub);margin:6px 0 4px}
+.chip.no{border-style:dashed;color:var(--sub);background:none}
+.goal{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:0;padding:10px 12px;margin:6px 0;min-height:48px}
+.goal small{color:var(--sub);white-space:nowrap}
+.soon{font-size:13px;color:var(--sub);border:1px dashed var(--line);padding:14px;text-align:center}
 .pref{border-bottom:1px solid var(--line)}
 .pref summary{list-style:none;display:grid;grid-template-columns:6.5em minmax(0,1fr) 4.5em;gap:10px;align-items:center;padding:10px 0;min-height:44px;cursor:pointer}
 .pref summary::-webkit-details-marker{display:none}
@@ -122,7 +151,7 @@ input[type=file]{display:none}
   <p id="loadinfo"></p>
 </header>
 <div id="map"></div>
-<div class="seg" id="seg"><button data-mode="muni" aria-pressed="true">市区町村</button><button data-mode="pref" aria-pressed="false">都道府県</button></div>
+<button class="mode" id="modeSw" role="switch" aria-checked="false" aria-label="都道府県と市区町村の切り替え"><i></i><b data-m="pref">都道府県</b><b data-m="muni">市区町村</b></button>
 <div id="banner"><span id="bannerText"></span><button id="bannerCancel">やめる</button></div>
 
 <section class="panel" id="p-rec"></section>
@@ -168,6 +197,26 @@ const MIG = {};
 ['#c4846c','#d4a27a','#cdb071','#9fb09a','#92b3b5','#8a9db5','#a99bb8','#c99ca3'].forEach((c, i) => MIG[c] = [0, 1, 2, 4, 5, 6, 7, 1][i]);
 const LAND = '#faf7f1', EDGE = '#ddd3c4', OUTLINE = '#9c8f7e';
 const pc = i => String(i).padStart(2, '0');
+/* 政令指定都市（区はまとめて市を1つとして扱う。東京23区は別々のまま） */
+const DES = {'01100':'札幌市','04100':'仙台市','11100':'さいたま市','12100':'千葉市','14100':'横浜市','14130':'川崎市','14150':'相模原市','15100':'新潟市','22100':'静岡市','22130':'浜松市','23100':'名古屋市','26100':'京都市','27100':'大阪市','27140':'堺市','28100':'神戸市','33100':'岡山市','34100':'広島市','40100':'北九州市','40130':'福岡市','43100':'熊本市'};
+const DESC = Object.keys(DES).sort();
+function unitOf(code) {
+  if (code.length !== 5 || DES[code]) return code;
+  let u = null;
+  for (const c of DESC) if (c.slice(0, 2) === code.slice(0, 2) && c < code && +code - +c < 30) u = c;
+  return u || code;
+}
+/* 面積（km²）：球面上の多角形の面積 */
+function ringArea(r) {
+  let a = 0; const rad = Math.PI / 180;
+  for (let i = 0; i < r.length; i++) { const [x1, y1] = r[i], [x2, y2] = r[(i + 1) % r.length]; a += (x2 - x1) * rad * (2 + Math.sin(y1 * rad) + Math.sin(y2 * rad)); }
+  return Math.abs(a * 6378.137 * 6378.137 / 2);
+}
+function geomArea(g) {
+  const ps = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+  return ps.reduce((s, p) => s + ringArea(p[0]) - p.slice(1).reduce((t, h) => t + ringArea(h), 0), 0);
+}
+const areas = new Map();
 const isPref = c => c.length === 2;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = t => new Date(t).toLocaleDateString('ja-JP', {year:'numeric', month:'short', day:'numeric'});
@@ -236,8 +285,9 @@ function style(code) {
     const pv = prefV.get(code.slice(0, 2)), c = pv && !coverOf(pv) ? pv.color : LAND;
     return {...base, color: c, weight: .6, fillColor: c};
   }
-  const v = visits.get(code);
-  return {...base, color: v && !coverOf(v) ? '#fbf8f3' : EDGE, weight: v ? .8 : .6, fillColor: v && !coverOf(v) ? v.color : LAND};
+  const v = visits.get(code), fill = v && !coverOf(v) ? v.color : LAND;
+  if (DES[code]) return {...base, color: fill, weight: .6, fillColor: fill};
+  return {...base, color: v && !coverOf(v) ? '#fbf8f3' : EDGE, weight: v ? .8 : .6, fillColor: fill};
 }
 const restyleAll = () => allLayers.forEach(l => l.setStyle(style(l._code)));
 
@@ -276,7 +326,7 @@ function drawPhotoLayer(code) {
   if (!cov || !ls || !ls.length) return;
   const url = URL.createObjectURL(cov.blob), group = L.featureGroup().addTo(map), subs = [];
   for (const l of ls) {
-    const sub = L.GeoJSON.geometryToLayer(l.feature, {renderer: svgR, opacity: 1, fillOpacity: 1, weight: isPref(code) ? .8 : .7});
+    const sub = L.GeoJSON.geometryToLayer(l.feature, {renderer: svgR, opacity: 1, fillOpacity: 1, weight: isPref(code) || DES[code] ? .8 : .7});
     group.addLayer(sub); subs.push(sub);
     const mc = l._code; sub.on('click', e => { L.DomEvent.stop(e); onMuniTap(mc); });
   }
@@ -287,7 +337,7 @@ function drawPhotoLayer(code) {
   img.setAttribute('href', url); img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', url);
   img.setAttribute('preserveAspectRatio', 'xMidYMid slice'); img.setAttribute('x', 0); img.setAttribute('y', 0);
   el.appendChild(img); d.appendChild(el);
-  subs.forEach(s => s.setStyle({fillColor: `url(#${id})`, color: isPref(code) ? `url(#${id})` : '#fbf8f3'}));
+  subs.forEach(s => s.setStyle({fillColor: `url(#${id})`, color: isPref(code) || DES[code] ? `url(#${id})` : '#fbf8f3'}));
   const e = {group, el, img, url, bounds: L.featureGroup(ls).getBounds()};
   photoLayers.set(code, e); placePattern(e);
 }
@@ -296,9 +346,13 @@ function refresh(code) {
   (isPref(code) ? prefLayers(code) : (layers.get(code) || [])).forEach(l => l.setStyle(style(l._code)));
   drawPhotoLayer(code);
 }
+function showModeSw() {
+  const sw = $('#modeSw'); sw.classList.toggle('muni', mode === 'muni'); sw.setAttribute('aria-checked', mode === 'muni');
+  sw.querySelectorAll('b').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+}
 function setMode(m) {
   mode = m; try { localStorage.setItem('nuri-mode', m); } catch (e) {}
-  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m));
+  showModeSw();
   closeSheet();
   [...photoLayers.keys()].forEach(clearPhotoLayer);
   restyleAll();
@@ -328,11 +382,13 @@ function loadPref(i) {
     L.geoJSON(gj, {
       renderer,
       filter: f => f.properties && f.properties.N03_007,
-      style: f => style(String(f.properties.N03_007).padStart(5, '0')),
+      style: f => style(unitOf(String(f.properties.N03_007).padStart(5, '0'))),
       onEachFeature: (f, l) => {
-        const code = String(f.properties.N03_007).padStart(5, '0');
+        const raw = String(f.properties.N03_007).padStart(5, '0'), code = unitOf(raw);
         l._code = code; allLayers.push(l);
-        if (!meta.has(code)) meta.set(code, {name: nameOf(f.properties), pref: f.properties.N03_001 || PREFS[i - 1]});
+        if (!meta.has(code)) meta.set(code, {name: DES[code] || nameOf(f.properties), pref: f.properties.N03_001 || PREFS[i - 1], wards: []});
+        if (DES[code] && f.properties.N03_004) meta.get(code).wards.push(f.properties.N03_004);
+        areas.set(code, (areas.get(code) || 0) + geomArea(f.geometry));
         if (!layers.has(code)) layers.set(code, []);
         layers.get(code).push(l);
         l.on('click', e => { L.DomEvent.stop(e); onMuniTap(code); });
@@ -464,16 +520,75 @@ function renderCounts() {
   if (loaded.size === 47) loadInfo();
   if (tab === 'rec') renderRecords();
 }
+/* ---------- Records ---------- */
+const REGIONS = [['北海道', [1, 1]], ['東北', [2, 7]], ['関東', [8, 14]], ['中部', [15, 23]], ['近畿', [24, 30]], ['中国', [31, 35]], ['四国', [36, 39]], ['九州・沖縄', [40, 47]]];
+const CAPS = ['札幌市','青森市','盛岡市','仙台市','秋田市','山形市','福島市','水戸市','宇都宮市','前橋市','さいたま市','千葉市','新宿区','横浜市','新潟市','富山市','金沢市','福井市','甲府市','長野市','岐阜市','静岡市','名古屋市','津市','大津市','京都市','大阪市','神戸市','奈良市','和歌山市','鳥取市','松江市','岡山市','広島市','山口市','徳島市','高松市','松山市','高知市','福岡市','佐賀市','長崎市','熊本市','大分市','宮崎市','鹿児島市','那覇市'].map((n, k) => [k + 1, n]);
+const TOP20 = [[1,'札幌市'],[1,'函館市'],[1,'小樽市'],[26,'京都市'],[14,'横浜市'],[14,'鎌倉市'],[1,'富良野市'],[28,'神戸市'],[17,'金沢市'],[9,'日光市'],[20,'軽井沢町'],[44,'別府市'],[47,'那覇市'],[22,'熱海市'],[14,'箱根町'],[47,'石垣市'],[4,'仙台市'],[10,'草津町'],[40,'福岡市'],[42,'長崎市']];
+const findCode = (pi, name) => { for (const [c, m] of meta) if (c.slice(0, 2) === pc(pi) && m.name === name) return c; return null; };
+const baseName = n => n.replace(/[市町村区]$/, '');
+const COLLECTIONS = [
+  {id: 'cap', name: '県庁所在地', list: () => CAPS.map(([p, n]) => findCode(p, n))},
+  {id: 'des', name: '政令指定都市', list: () => DESC},
+  {id: 'hira', name: '名前がすべてひらがな', rule: b => /^[ぁ-ゖー]+$/.test(b)},
+  {id: 'one', name: '漢字1文字', rule: b => /^[㐀-鿿豈-﫿々]$/u.test(b)},
+  {id: 'long', name: '4文字以上', rule: b => [...b].length >= 4},
+  {id: 'top', name: '魅力度ランキングTOP20', note: '地域ブランド調査2026（ブランド総合研究所）より', list: () => TOP20.map(([p, n]) => findCode(p, n))}
+];
+function colStats() {
+  return COLLECTIONS.map(c => {
+    const mem = (c.rule ? [...meta].filter(([, m]) => c.rule(baseName(m.name))).map(([k]) => k).sort() : c.list()).filter(k => k && meta.has(k));
+    const n = mem.filter(k => visits.has(k)).length, N = mem.length;
+    return {c, mem, n, N, pct: N ? n / N : 0};
+  });
+}
+let colAll = false; const colOpen = new Set();
+const ring = (r, w, pct, col) => { const L = 2 * Math.PI * r; return `<circle cx="60" cy="60" r="${r}" fill="none" stroke="#ebe4d9" stroke-width="${w}"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-dasharray="${L.toFixed(1)}" stroke-dashoffset="${(L * (1 - Math.min(1, pct))).toFixed(1)}" transform="rotate(-90 60 60)"/>`; };
+const pctTxt = x => { const v = x * 100; return v > 0 && v < 10 ? v.toFixed(1) : String(Math.round(v)); };
 function renderRecords() {
-  const tot = prefTotals(), by = Array.from({length: 48}, () => []);
+  const ready = loaded.size === 47, tot = prefTotals(), by = Array.from({length: 48}, () => []);
   for (const v of visits.values()) { const i = +v.code.slice(0, 2); if (by[i]) by[i].push(v); }
+  const N = meta.size, mp = ready && N ? visits.size / N : 0, pp = prefV.size / 47;
+  let area = 0, all = 0; for (const [c, a] of areas) { all += a; if (visits.has(c)) area += a; }
+  const stats = ready ? colStats() : [];
+  const shown = colAll ? stats : stats.filter(x => x.n < x.N).sort((a, b) => b.pct - a.pct || (a.N - a.n) - (b.N - b.n)).slice(0, 3);
+  const goals = [];
+  if (ready) {
+    for (let i = 1; i <= 47; i++) { const n = by[i].length, t = tot[i]; if (n && n < t) goals.push([`${PREFS[i - 1]}の市区町村をコンプリート`, t - n, n / t]); }
+    for (const x of stats) if (x.n && x.n < x.N) goals.push([`${x.c.name}をコンプリート`, x.N - x.n, x.pct]);
+    goals.sort((a, b) => a[1] - b[1] || b[2] - a[2]);
+  }
+  const chips = (codes, done) => codes.map(k => { const v = visits.get(k), m = meta.get(k);
+    return `<button class="chip${done ? '' : ' no'}" data-code="${k}">${done ? `<i class="dot" style="${swatchCSS(v)}"></i>` : ''}${esc(m.name)}${m.pref !== m.name ? `<small style="color:var(--sub);font-size:11px">${esc(m.pref)}</small>` : ''}</button>`; }).join('');
   $('#p-rec').innerHTML = `<h2>Records</h2>
-  <div class="big"><div><b>${visits.size}</b><span>市区町村${loaded.size === 47 ? `／${meta.size}` : ''}</span></div><div><b>${prefV.size}</b><span>都道府県／47</span></div><div><b>${photos.length}</b><span>枚の写真</span></div></div>
-  ${visits.size || prefV.size ? '' : '<p class="empty">まだ何も塗られていません。地図でタップして塗りましょう。</p>'}
+  <div class="hero"><svg viewBox="0 0 120 120" role="img" aria-label="制覇率">${ring(52, 10, mp, '#8c5a45')}${ring(36, 8, pp, '#3f5a6e')}</svg>
+    <div class="st"><div class="k"><i style="background:#8c5a45"></i><b>${ready ? pctTxt(mp) : '–'}<small>%</small></b><span>市区町村 ${visits.size}${ready ? ' / ' + N.toLocaleString() : ''}</span></div>
+    <div class="k"><i style="background:#3f5a6e"></i><b>${pctTxt(pp)}<small>%</small></b><span>都道府県 ${prefV.size} / 47</span></div></div></div>
+  <div class="area">塗った市区町村の面積　約<b>${Math.round(area).toLocaleString()}</b>km²${ready && all ? `（全国の${pctTxt(area / all)}%）` : ''}</div>
+  ${ready ? '' : '<p class="empty">地図データを準備中です。少し待つと全体の数字が表示されます。</p>'}
+
+  <section class="sec"><div class="sec-h"><h3>Regions</h3><small>地方別</small></div>
+  ${REGIONS.map(([n, [a, b]]) => { let pn = 0, mn = 0, mt = 0; for (let i = a; i <= b; i++) { if (prefV.has(pc(i))) pn++; mn += by[i].length; mt += tot[i]; } const pt = b - a + 1;
+    return `<div class="rg"><b>${n}</b>
+    <div class="rl"><span>都道府県</span><span class="bar pf"><i style="width:${pn / pt * 100}%"></i></span><span>${pn} / ${pt}</span></div>
+    <div class="rl"><span>市区町村</span><span class="bar mu"><i style="width:${mt ? mn / mt * 100 : 0}%"></i></span><span>${mn} / ${mt || '–'}</span></div></div>`; }).join('')}</section>
+
+  <section class="sec"><div class="sec-h"><h3>Collections</h3><button data-colall="1">${colAll ? 'もうすぐ達成だけ' : `すべて見る（${COLLECTIONS.length}）`}</button></div>
+  ${!ready ? '<p class="soon">地図データの準備ができると表示されます</p>' : shown.length ? shown.map(x => `<div class="col${colOpen.has(x.c.id) ? ' open' : ''}">
+    <button data-coltg="${x.c.id}" aria-expanded="${colOpen.has(x.c.id)}"><b>${x.c.name}${x.n === x.N ? '<span class="ck">達成</span>' : ''}</b><span class="num">${x.n} / ${x.N}</span><span class="bar mu"><i style="width:${x.pct * 100}%"></i></span></button>
+    <div class="det">${x.c.note ? `<p>${x.c.note}</p>` : ''}<p>行った場所 ${x.n}</p><div class="chips">${chips(x.mem.filter(k => visits.has(k)), true) || '<small style="color:var(--sub)">まだありません</small>'}</div>
+    <p>まだの場所 ${x.N - x.n}</p><div class="chips">${chips(x.mem.filter(k => !visits.has(k)), false) || '<small style="color:var(--sub)">コンプリート！</small>'}</div></div></div>`).join('')
+    : '<p class="soon">すべてのコレクションを達成しました</p>'}</section>
+
+  <section class="sec"><div class="sec-h"><h3>Next goals</h3><small>もう少しで達成</small></div>
+  ${goals.length ? goals.slice(0, 3).map(g => `<div class="goal"><span>${esc(g[0])}</span><small>あと ${g[1]}</small></div>`).join('') : '<p class="soon">市区町村を塗ると、次の目標が表示されます</p>'}</section>
+
+  <section class="sec"><div class="sec-h"><h3>Badges</h3><small>実績</small></div><p class="soon">バッジは準備中です</p></section>
+
+  <section class="sec"><div class="sec-h"><h3>Prefectures</h3><small>都道府県ごとの記録</small></div>
   ${PREFS.map((n, k) => { const i = k + 1, list = by[i].sort((a, b) => a.code.localeCompare(b.code)), t = tot[i], pv = prefV.get(pc(i));
     const pct = t ? Math.round(list.length / t * 100) : 0;
     return `<details class="pref"><summary><span><i class="dot${pv ? '' : ' none'}" style="${pv ? swatchCSS(pv) : ''}"></i>${n}</span><span class="bar"><i style="width:${pct}%"></i></span><span class="num">${list.length}${t ? '/' + t : ''}</span></summary>
-    <div class="chips"><button class="chip" data-code="${pc(i)}">${pv ? '' : '<i class="dot none"></i>'}${pv ? `<i class="dot" style="${swatchCSS(pv)}"></i>` : ''}${n}全体</button>${list.map(v => `<button class="chip" data-code="${v.code}"><i class="dot" style="${swatchCSS(v)}"></i>${esc(v.name)}</button>`).join('')}</div></details>`; }).join('')}`;
+    <div class="chips"><button class="chip" data-code="${pc(i)}"><i class="dot${pv ? '' : ' none'}" style="${pv ? swatchCSS(pv) : ''}"></i>${n}全体</button>${list.map(v => `<button class="chip" data-code="${v.code}"><i class="dot" style="${swatchCSS(v)}"></i>${esc(v.name)}</button>`).join('')}</div></details>`; }).join('')}</section>`;
 }
 function renderPhotos() {
   const ps = [...photos].sort((a, b) => b.ts - a.ts);
@@ -529,7 +644,10 @@ async function onMuniTap(mcode) {
 function localHits(term) {
   const hits = [];
   PREFS.forEach((n, k) => { if (n.includes(term)) hits.push([pc(k + 1), n, '都道府県', n.startsWith(term) ? 0 : 1]); });
-  for (const [code, m] of meta) if (m.name.includes(term) || (m.pref + m.name).includes(term)) hits.push([code, m.name, m.pref, m.name.startsWith(term) ? 0 : 1]);
+  for (const [code, m] of meta) {
+    if (m.name.includes(term) || (m.pref + m.name).includes(term)) hits.push([code, m.name, m.pref, m.name.startsWith(term) ? 0 : 1]);
+    else { const w = (m.wards || []).find(w => w.includes(term)); if (w) hits.push([code, m.name, `${m.pref}・${w}`, w.startsWith(term) ? 0 : 1]); }
+  }
   return hits.sort((a, b) => a[3] - b[3] || a[0].length - b[0].length || a[0].localeCompare(b[0])).slice(0, 12);
 }
 const rowHTML = (code, n, s) => { const v = recOf(code); return `<button data-code="${code}"><span>${esc(n)} <small>${esc(s)}</small></span>${v ? `<i style="${swatchCSS(v)}"></i>` : ''}</button>`; };
@@ -610,7 +728,7 @@ function showTab(t) {
   tab = t;
   document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === t));
   ['rec', 'photo', 'set'].forEach(k => $('#p-' + k).classList.toggle('on', k === t));
-  $('#seg').style.display = t === 'map' ? '' : 'none';
+  $('#modeSw').style.display = t === 'map' ? '' : 'none';
   if (t !== 'map') closeSheet();
   if (t === 'rec') renderRecords();
   if (t === 'photo') renderPhotos();
@@ -643,12 +761,13 @@ async function importData(file) {
       if (cur) { nv.dates = [...new Set([...cur.dates, ...v.dates])].sort((a, b) => a - b); nv.first = Math.min(cur.first, v.first); }
       M.set(v.code, nv); await put(storeOf(v.code), nv); refresh(v.code);
     }
+    await mergeWards(); [...visits.keys()].forEach(refresh);
     renderCounts(); toast('読み込みました');
   } catch (e) { toast('バックアップファイルを読み込めませんでした'); }
 }
 
 /* ---------- イベント ---------- */
-document.querySelectorAll('#seg button').forEach(b => b.onclick = () => { if (b.dataset.mode !== mode) { setMode(b.dataset.mode); setBanner(); } });
+$('#modeSw').onclick = () => { setMode(mode === 'pref' ? 'muni' : 'pref'); setBanner(); };
 $('#q').addEventListener('input', e => search(e.target.value));
 $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); geoSearch(e.target.value); } });
 $('#q').addEventListener('focus', e => { if (e.target.value) search(e.target.value); });
@@ -681,7 +800,12 @@ $('#sheet').addEventListener('click', async e => {
   if (act === 'today') addDay(code);
   if (act === 'unmark' && await ask(`${label(code)}の塗りを消します。${isPref(code) ? '都道府県に直接登録した写真' : '登録した写真'}も削除されます。よろしいですか？`, '消す')) { await unpaint(code); openSheet(code); }
 });
-$('#p-rec').addEventListener('click', e => { const c = e.target.closest('[data-code]'); if (c) go(c.dataset.code); });
+$('#p-rec').addEventListener('click', e => {
+  if (e.target.closest('[data-colall]')) { colAll = !colAll; return renderRecords(); }
+  const t = e.target.closest('[data-coltg]');
+  if (t) { const id = t.dataset.coltg; colOpen.has(id) ? colOpen.delete(id) : colOpen.add(id); return renderRecords(); }
+  const c = e.target.closest('[data-code]'); if (c) go(c.dataset.code);
+});
 $('#p-photo').addEventListener('click', e => { const ph = e.target.closest('[data-ph]'); if (ph) openPhoto(+ph.dataset.ph); });
 $('#lbClose').onclick = closePhoto;
 $('#lbCover').onclick = async () => { const p = photos.find(x => x.id === lbId); if (!p) return; const tgt = coverTarget(p); if (!tgt) return; await paint(tgt, {coverId: p.id}); closePhoto(); toast('写真で塗りました'); if (tab === 'photo') renderPhotos(); if (current) openSheet(current); };
@@ -699,6 +823,23 @@ $('#btnWipe').onclick = async () => {
   visits.clear(); prefV.clear(); photos = []; restyleAll(); renderCounts(); toast('消去しました');
 };
 
+/* 区ごとに塗っていた記録を市にまとめる */
+async function mergeWards() {
+  for (const v of [...visits.values()]) {
+    const u = unitOf(v.code); if (u === v.code) continue;
+    const t = visits.get(u);
+    for (const p of photos.filter(p => p.code === v.code)) { p.code = u; await put('photos', p); }
+    if (!t) { visits.set(u, {...v, code: u, name: DES[u] || v.name}); }
+    else {
+      const earlier = v.first < t.first ? v : t;
+      t.dates = [...new Set([...t.dates, ...v.dates])].sort((a, b) => a - b);
+      t.first = Math.min(t.first, v.first); t.color = earlier.color;
+      if (t.coverId == null || earlier === v) t.coverId = v.coverId != null ? v.coverId : t.coverId;
+    }
+    visits.delete(v.code); await del('visits', v.code); await put('visits', visits.get(u));
+  }
+}
+
 /* ---------- 起動 ---------- */
 (async () => {
   try {
@@ -706,7 +847,8 @@ $('#btnWipe').onclick = async () => {
     for (const v of await getAll('prefs')) { v.color = migrate(v.color); prefV.set(v.code, v); }
     photos = await getAll('photos');
   } catch (e) { toast('この端末のブラウザでは保存が使えません'); }
-  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
+  await mergeWards();
+  showModeSw();
   renderCounts();
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
   loadOutline();
