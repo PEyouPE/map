@@ -42,18 +42,18 @@ header h1{margin:0;line-height:0}header h1 img{height:40px;width:auto;display:bl
 .leaflet-control-attribution{font-size:10px;background:rgba(243,238,230,.85)!important;color:var(--sub)}
 .leaflet-control-attribution a{color:var(--sub)}
 .leaflet-bottom{bottom:calc(58px + var(--sb))}
-.mode{position:fixed;left:12px;top:calc(var(--st) + 126px);z-index:900;display:grid;grid-template-columns:1fr 1fr;width:200px;background:var(--ink);border:0;border-radius:999px;padding:4px;box-shadow:0 4px 14px rgba(43,39,34,.18)}
+.mode{position:fixed;left:12px;top:calc(var(--hh,150px) + 10px);z-index:900;display:grid;grid-template-columns:1fr 1fr;width:200px;background:var(--ink);border:0;border-radius:999px;padding:4px;box-shadow:0 4px 14px rgba(43,39,34,.18)}
 .mode i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--card);border-radius:999px;transition:transform .25s ease}
 .mode.muni i{transform:translateX(100%)}
 .mode b{position:relative;text-align:center;font-weight:500;font-size:13px;line-height:36px;color:#bfb3a3;transition:color .25s}
 .mode b.on{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.mode i,.mode b{transition:none}}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:var(--sb)}
-nav button{border:0;background:none;height:58px;font:400 14px/1 var(--serif);letter-spacing:.03em;color:var(--sub);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:var(--sb)}
+nav button{border:0;background:none;height:58px;font:400 13px/1 var(--serif);letter-spacing:.03em;color:var(--sub);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative}
 nav button svg{width:21px;height:21px;stroke-width:1.6}
 nav button[aria-current=true]{color:var(--ink)}
 nav button[aria-current=true]::after{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--ink)}
-.panel{position:fixed;left:0;right:0;top:0;bottom:calc(58px + var(--sb));z-index:950;background:var(--bg);overflow-y:auto;padding:calc(var(--st) + 128px) 18px 32px;display:none}
+.panel{position:fixed;left:0;right:0;top:0;bottom:calc(58px + var(--sb));z-index:950;background:var(--bg);overflow-y:auto;padding:calc(var(--hh,150px) + 14px) 18px 32px;display:none}
 .panel.on{display:block}
 .panel h2{font:400 34px/1.1 var(--serif);margin:10px 0 16px;letter-spacing:0}
 .hero{display:flex;gap:16px;align-items:center;border-top:1px solid var(--ink);padding:16px 0 8px}
@@ -126,7 +126,7 @@ nav button[aria-current=true]::after{content:"";position:absolute;top:0;left:30%
 .sw .phbtn svg{width:20px;height:20px;stroke-width:1.6}
 #sheet details{margin-top:14px;font-size:14px}#sheet summary{min-height:40px;cursor:pointer;color:var(--sub)}
 #sheet ul{margin:4px 0 12px;padding-left:20px}
-#banner{position:fixed;left:12px;right:12px;top:calc(var(--st) + 176px);z-index:1050;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ink);box-shadow:0 6px 20px rgba(43,39,34,.12);border-radius:0;padding:12px 14px;display:none;align-items:center;gap:10px;font-size:14px}
+#banner{position:fixed;left:12px;right:12px;top:calc(var(--hh,150px) + 62px);z-index:1050;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ink);box-shadow:0 6px 20px rgba(43,39,34,.12);border-radius:0;padding:12px 14px;display:none;align-items:center;gap:10px;font-size:14px}
 #banner.on{display:flex}#banner button{margin-left:auto;background:none;border:1px solid var(--ink);border-radius:2px;min-height:36px;padding:0 12px;font-weight:500;flex:none}
 #toast{position:fixed;left:50%;bottom:calc(82px + var(--sb));transform:translate(-50%,20px);z-index:1500;background:var(--ink);color:var(--card);border-radius:2px;padding:10px 18px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -138,6 +138,24 @@ dialog{border:1px solid var(--line);border-radius:4px;padding:20px;max-width:340
 dialog p{margin:0 0 16px}
 @media (prefers-reduced-motion:reduce){#sheet,#toast{transition:none}}
 input[type=file]{display:none}
+.bcount{display:flex;align-items:baseline;gap:8px;border-top:1px solid var(--ink);padding-top:12px}
+.bcount b{font:400 40px/1 var(--serif)}.bcount span{font-size:13px;color:var(--sub)}
+.bbar{height:4px;background:var(--soft);margin:10px 0 6px}.bbar i{display:block;height:100%;background:#8c5a45}
+.recent{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.recent button{flex:none;width:76px;border:0;background:none;padding:0;font-size:11px;color:var(--sub);line-height:1.3}
+.stamp{display:block;width:100%;height:auto}
+.page{background-color:var(--card);background-image:repeating-linear-gradient(transparent 0 31px,#efe8dc 31px 32px);border:1px solid var(--line);padding:12px 10px 10px;margin:12px 0}
+.page-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;border-bottom:1px solid var(--ink);padding-bottom:6px;margin-bottom:6px}
+.page-h b{font:400 20px/1.1 var(--serif)}.page-h b small{font:12px "Noto Sans JP",sans-serif;color:var(--sub);margin-left:6px}
+.page-h span{font-size:12px;color:var(--sub);white-space:nowrap}
+.sub-h{font-size:12px;color:var(--sub);margin:10px 2px 2px}
+.stamps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+.stamps button{border:0;background:none;padding:2px;min-height:44px}
+#bdlg{text-align:center;max-width:320px}
+#bdlg .big{width:150px;height:150px;margin:0 auto 6px;display:block}
+#bdlg h4{font:600 20px/1.3 var(--jserif);margin:4px 0}
+#bdlg p{margin:4px 0 0;font-size:14px;color:var(--sub)}
+#bdlg .when{font:400 15px var(--serif);color:var(--ink);margin-top:10px}
 </style>
 </head>
 <body>
@@ -155,6 +173,7 @@ input[type=file]{display:none}
 <div id="banner"><span id="bannerText"></span><button id="bannerCancel">やめる</button></div>
 
 <section class="panel" id="p-rec"></section>
+<section class="panel" id="p-badge"></section>
 <section class="panel" id="p-photo"></section>
 <section class="panel" id="p-set">
   <h2>Settings</h2>
@@ -170,12 +189,14 @@ input[type=file]{display:none}
 <div id="sheet"></div>
 <div id="lb"><img id="lbImg" alt=""><div class="cap"><div id="lbCap"></div>
   <button class="btn pri" id="lbCover">この写真で塗る</button><button class="btn" id="lbMap">地図で見る</button><button class="btn" id="lbDel">削除</button><button class="btn" id="lbClose">閉じる</button></div></div>
+<dialog id="bdlg"><div id="bdlgBody"></div><div class="row" style="justify-content:center;margin:16px 0 0"><button class="btn" id="bdlgClose">閉じる</button></div></dialog>
 <dialog id="dlg"><p id="dlgText"></p><div class="row" style="justify-content:flex-end;margin:0"><button class="btn" id="dlgNo">キャンセル</button><button class="btn pri" id="dlgYes">OK</button></div></dialog>
 <div id="toast"></div>
 
 <nav>
   <button data-tab="map" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Map</button>
   <button data-tab="rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Records</button>
+  <button data-tab="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6"/><path d="M9.5 12.5l1.8 1.8 3.2-3.6"/></svg>Badges</button>
   <button data-tab="photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Photos</button>
   <button data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</button>
 </nav>
@@ -226,12 +247,13 @@ const ICON_PHOTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 /* ---------- 保存（IndexedDB） ---------- */
 let dbp;
 const db = () => dbp || (dbp = new Promise((res, rej) => {
-  const r = indexedDB.open('muni-nuri', 2);
+  const r = indexedDB.open('muni-nuri', 3);
   r.onupgradeneeded = () => {
     const d = r.result, has = n => d.objectStoreNames.contains(n);
     if (!has('visits')) d.createObjectStore('visits', {keyPath: 'code'});
     if (!has('photos')) d.createObjectStore('photos', {keyPath: 'id', autoIncrement: true}).createIndex('code', 'code');
     if (!has('prefs')) d.createObjectStore('prefs', {keyPath: 'code'});
+    if (!has('badges')) d.createObjectStore('badges', {keyPath: 'id'});
   };
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 }));
@@ -292,11 +314,12 @@ function style(code) {
 const restyleAll = () => allLayers.forEach(l => l.setStyle(style(l._code)));
 
 /* 都道府県の境界線（見た目用） */
-let outlineLayer = null;
+let outlineLayer = null, outlineGJ = null;
 async function loadOutline() {
   if (outlineLayer) return;
   try {
     const gj = await fetchJSON(['https://cdn.jsdelivr.net/gh/dataofjapan/land@master/japan.geojson', 'https://raw.githubusercontent.com/dataofjapan/land/master/japan.geojson']);
+    outlineGJ = gj; badgeShapes.clear();
     outlineLayer = L.geoJSON(gj, {renderer: outlineR, interactive: false, style: {renderer: outlineR, color: OUTLINE, weight: 1.1, opacity: .8, fill: false}}).addTo(map);
   } catch (e) {}
 }
@@ -409,6 +432,7 @@ async function loadAll() {
   const worker = async () => { while (q.length) { const i = q.shift(); try { await loadPref(i); } catch (e) { fail++; } loadInfo(); } };
   await Promise.all([worker(), worker(), worker(), worker()]);
   loadInfo(fail);
+  scheduleBadges();
 }
 function loadInfo(fail) {
   const n = loaded.size, empty = mode === 'pref' ? !prefV.size : !visits.size;
@@ -516,6 +540,7 @@ function ask(text, okLabel = 'OK') {
 }
 function prefTotals() { const t = Array(48).fill(0); for (const c of meta.keys()) t[+c.slice(0, 2)]++; return t; }
 function renderCounts() {
+  scheduleBadges();
   $('#count').innerHTML = mode === 'pref' ? `<b>${prefV.size}</b>/47 都道府県` : `<b>${visits.size}</b>市区町村`;
   if (loaded.size === 47) loadInfo();
   if (tab === 'rec') renderRecords();
@@ -542,6 +567,12 @@ function colStats() {
   });
 }
 let colAll = false; const colOpen = new Set();
+let prefAll = false;
+function prefRows(by, tot) {
+  const idx = PREFS.map((_, k) => k);
+  if (prefAll) return idx;
+  return idx.filter(k => by[k + 1].length).sort((a, b) => by[b + 1].length / (tot[b + 1] || 1) - by[a + 1].length / (tot[a + 1] || 1) || by[b + 1].length - by[a + 1].length).slice(0, 5);
+}
 const ring = (r, w, pct, col) => { const L = 2 * Math.PI * r; return `<circle cx="60" cy="60" r="${r}" fill="none" stroke="#ebe4d9" stroke-width="${w}"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-dasharray="${L.toFixed(1)}" stroke-dashoffset="${(L * (1 - Math.min(1, pct))).toFixed(1)}" transform="rotate(-90 60 60)"/>`; };
 const pctTxt = x => { const v = x * 100; return v > 0 && v < 10 ? v.toFixed(1) : String(Math.round(v)); };
 function renderRecords() {
@@ -582,10 +613,10 @@ function renderRecords() {
   <section class="sec"><div class="sec-h"><h3>Next goals</h3><small>もう少しで達成</small></div>
   ${goals.length ? goals.slice(0, 3).map(g => `<div class="goal"><span>${esc(g[0])}</span><small>あと ${g[1]}</small></div>`).join('') : '<p class="soon">市区町村を塗ると、次の目標が表示されます</p>'}</section>
 
-  <section class="sec"><div class="sec-h"><h3>Badges</h3><small>実績</small></div><p class="soon">バッジは準備中です</p></section>
 
-  <section class="sec"><div class="sec-h"><h3>Prefectures</h3><small>都道府県ごとの記録</small></div>
-  ${PREFS.map((n, k) => { const i = k + 1, list = by[i].sort((a, b) => a.code.localeCompare(b.code)), t = tot[i], pv = prefV.get(pc(i));
+  <section class="sec"><div class="sec-h"><h3>Prefectures</h3><button data-prefall="1">${prefAll ? '上位5つだけ' : 'すべて見る（47）'}</button></div>
+  ${prefRows(by, tot).length ? '' : '<p class="soon">市区町村を塗ると、割合の高い都道府県が表示されます</p>'}
+  ${prefRows(by, tot).map(k => { const n = PREFS[k], i = k + 1, list = by[i].sort((a, b) => a.code.localeCompare(b.code)), t = tot[i], pv = prefV.get(pc(i));
     const pct = t ? Math.round(list.length / t * 100) : 0;
     return `<details class="pref"><summary><span><i class="dot${pv ? '' : ' none'}" style="${pv ? swatchCSS(pv) : ''}"></i>${n}</span><span class="bar"><i style="width:${pct}%"></i></span><span class="num">${list.length}${t ? '/' + t : ''}</span></summary>
     <div class="chips"><button class="chip" data-code="${pc(i)}"><i class="dot${pv ? '' : ' none'}" style="${pv ? swatchCSS(pv) : ''}"></i>${n}全体</button>${list.map(v => `<button class="chip" data-code="${v.code}"><i class="dot" style="${swatchCSS(v)}"></i>${esc(v.name)}</button>`).join('')}</div></details>`; }).join('')}</section>`;
@@ -727,11 +758,12 @@ let tab = 'map';
 function showTab(t) {
   tab = t;
   document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === t));
-  ['rec', 'photo', 'set'].forEach(k => $('#p-' + k).classList.toggle('on', k === t));
+  ['rec', 'badge', 'photo', 'set'].forEach(k => $('#p-' + k).classList.toggle('on', k === t));
   $('#modeSw').style.display = t === 'map' ? '' : 'none';
   if (t !== 'map') closeSheet();
   if (t === 'rec') renderRecords();
   if (t === 'photo') renderPhotos();
+  if (t === 'badge') renderBadges();
   if (t === 'set') loadInfo();
   if (t === 'map') setTimeout(() => map.invalidateSize(), 0);
 }
@@ -740,7 +772,7 @@ function showTab(t) {
 const toDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
 async function exportData() {
   toast('書き出し中…');
-  const out = {app: 'muni-nuri', version: 3, exported: Date.now(), visits: [...visits.values()], prefs: [...prefV.values()], photos: []};
+  const out = {app: 'muni-nuri', version: 3, exported: Date.now(), visits: [...visits.values()], prefs: [...prefV.values()], badges: [...earned].map(([id, ts]) => ({id, ts})), photos: []};
   for (const p of photos) out.photos.push({oid: p.id, code: p.code, ts: p.ts, blob: await toDataURL(p.blob), thumb: await toDataURL(p.thumb || p.blob)});
   const url = URL.createObjectURL(new Blob([JSON.stringify(out)], {type: 'application/json'}));
   const a = document.createElement('a'); a.href = url; a.download = `nuritsubushi-${new Date().toISOString().slice(0, 10)}.json`;
@@ -761,6 +793,7 @@ async function importData(file) {
       if (cur) { nv.dates = [...new Set([...cur.dates, ...v.dates])].sort((a, b) => a - b); nv.first = Math.min(cur.first, v.first); }
       M.set(v.code, nv); await put(storeOf(v.code), nv); refresh(v.code);
     }
+    for (const b of j.badges || []) if (!earned.has(b.id) || earned.get(b.id) > b.ts) { earned.set(b.id, b.ts); await put('badges', b); }
     await mergeWards(); [...visits.keys()].forEach(refresh);
     renderCounts(); toast('読み込みました');
   } catch (e) { toast('バックアップファイルを読み込めませんでした'); }
@@ -802,6 +835,7 @@ $('#sheet').addEventListener('click', async e => {
 });
 $('#p-rec').addEventListener('click', e => {
   if (e.target.closest('[data-colall]')) { colAll = !colAll; return renderRecords(); }
+  if (e.target.closest('[data-prefall]')) { prefAll = !prefAll; return renderRecords(); }
   const t = e.target.closest('[data-coltg]');
   if (t) { const id = t.dataset.coltg; colOpen.has(id) ? colOpen.delete(id) : colOpen.add(id); return renderRecords(); }
   const c = e.target.closest('[data-code]'); if (c) go(c.dataset.code);
@@ -818,10 +852,121 @@ $('#btnImport').onclick = () => $('#inImp').click();
 $('#btnReload').onclick = () => { toast('再読み込み中…'); loadAll(); loadOutline(); };
 $('#btnWipe').onclick = async () => {
   if (!await ask('すべての塗りと写真を削除します。元に戻せません。', 'すべて消去')) return;
-  await clearStore('visits'); await clearStore('photos'); await clearStore('prefs');
+  await clearStore('visits'); await clearStore('photos'); await clearStore('prefs'); await clearStore('badges'); earned.clear();
   [...photoLayers.keys()].forEach(clearPhotoLayer);
   visits.clear(); prefV.clear(); photos = []; restyleAll(); renderCounts(); toast('消去しました');
 };
+
+
+/* ---------- Badges（スタンプ帳） ---------- */
+const INK = {ms: '#8c5a45', pf: '#3f5a6e', ph: '#7a5c6e', ar: '#a8834f', rg: '#5f6f52', ed: '#6f7b86', fm: '#3f3a33', co: '#b08078', pr: '#8c5a45'};
+const PAGES = [['ms', 'Milestones', '道のり'], ['ph', 'Photos', '写真'], ['ar', 'Area', '面積'], ['rg', 'Regions', '地方制覇'], ['ed', 'Edges', '端っこ'], ['fm', 'Famous places', '名所めぐり'], ['co', 'Collections', 'コレクション'], ['pr', 'Prefectures', '都道府県パーフェクト']];
+const B = [];
+const at = (pi, n) => { const c = findCode(pi, n); return !!c && visits.has(c); };
+const allAt = list => list.every(([p, n]) => at(p, n));
+/* 市区町村の数 */
+[[1, 'はじめの一歩'], [10], [50], [100], [200], [300], [500], [1000]].forEach(([n, nm]) => B.push({id: 'm' + n, page: 'ms', name: nm || `${n}市区町村`, v: String(n), lbl: '市区町村', show: true, cond: `市区町村を${n}か所塗る`, test: x => x.nV >= n}));
+B.push({id: 'mall', page: 'ms', name: '日本制覇', v: '全', lbl: '日本制覇', show: true, cond: 'すべての市区町村を塗る', test: x => x.ready && x.nV >= x.N});
+[[1, '最初の県'], [10, '10都道府県'], [24, '折り返し地点'], [47, '47都道府県']].forEach(([n, nm]) => B.push({id: 'p' + n, page: 'ms', ink: 'pf', name: nm, v: String(n), lbl: '都道府県', show: true, cond: `都道府県を${n}つ塗る`, test: x => x.nP >= n}));
+/* 写真 */
+[[1, '最初の1枚'], [10, '10枚'], [50, '50枚'], [100, '100枚'], [500, '500枚']].forEach(([n, nm]) => B.push({id: 'ph' + n, page: 'ph', name: nm, v: String(n), lbl: '写真', show: true, cond: `写真を${n}枚登録する`, test: x => x.nPh >= n}));
+B.push({id: 'phjp', page: 'ph', name: '写真の日本地図', icon: 'cam', lbl: '写真の日本地図', cond: '47都道府県すべてを写真で塗る', hint: '都道府県を写真で…', test: () => prefV.size === 47 && [...prefV.values()].every(v => coverOf(v))});
+/* 面積 */
+[[1000, '1千'], [10000, '1万'], [50000, '5万'], [100000, '10万']].forEach(([n, v]) => B.push({id: 'a' + n, page: 'ar', name: `${n.toLocaleString()}km²`, v, lbl: 'km²', show: true, cond: `塗った面積が${n.toLocaleString()}km²を超える`, test: x => x.area >= n}));
+B.push({id: 'ahalf', page: 'ar', name: '国土の半分', v: '½', lbl: '国土の半分', show: true, cond: '塗った面積が全国の50%を超える', test: x => x.ready && x.all && x.area / x.all >= .5});
+/* 地方制覇ほか */
+REGIONS.forEach(([n, [a, b]], k) => B.push({id: 'r' + k, page: 'rg', name: `${n}制覇`, tx: n === '九州・沖縄' ? '九州' : n, cond: `${n}の都道府県をすべて塗る`, hint: 'どこかの地方の都道府県をすべて…', test: () => { for (let i = a; i <= b; i++) if (!prefV.has(pc(i))) return false; return true; }}));
+B.push({id: 'umi', page: 'rg', name: '海なし県制覇', tx: '海なし', cond: '栃木・群馬・埼玉・山梨・長野・岐阜・滋賀・奈良をすべて塗る', hint: '海のない…', test: () => [9, 10, 11, 19, 20, 21, 25, 29].every(i => prefV.has(pc(i)))});
+B.push({id: 'big3', page: 'rg', name: '三大都市', tx: '三都', cond: '東京23区のどこか・大阪市・名古屋市を塗る', hint: '日本の大都市を…', test: () => visits.has('27100') && visits.has('23100') && [...visits.keys()].some(c => c >= '13101' && c <= '13123')});
+B.push({id: 't23', page: 'rg', name: '東京23区コンプリート', tx: '23区', cond: '東京23区をすべて塗る', hint: '東京の区を…', test: x => x.ready && Array.from({length: 23}, (_, i) => String(13101 + i).padStart(5, '0')).every(c => visits.has(c))});
+B.push({id: 'mura', page: 'rg', name: '村めぐり', tx: '村', cond: '村を10か所塗る', hint: '小さな自治体を…', test: () => [...visits.values()].filter(v => /村$/.test(v.name || '')).length >= 10});
+/* 端っこ */
+[['j0', '最北端', 0, 1, '稚内市', '日本'], ['j1', '最東端', 90, 1, '根室市', '日本'], ['j2', '最西端', 270, 47, '与那国町', '日本'], ['j3', '最南端', 180, 47, '竹富町', '日本'],
+ ['h0', '本州最北端', 0, 2, '大間町', '本州'], ['h1', '本州最東端', 90, 3, '宮古市', '本州'], ['h2', '本州最西端', 270, 35, '下関市', '本州'], ['h3', '本州最南端', 180, 30, '串本町', '本州']]
+  .forEach(([id, nm, rot, p, town, area]) => B.push({id, page: 'ed', name: id[0] === 'j' ? '日本' + nm : nm, icon: 'arr', rot, lbl: `${area}${nm.replace('本州', '')}`, cond: `${town}を塗る`, hint: `${area}の端っこを…`, test: () => at(p, town)}));
+/* 名所めぐり */
+[['f0', '日本三景', '三景', [[4, '松島町'], [26, '宮津市'], [34, '廿日市市']]], ['f1', '日本三名泉', '名泉', [[10, '草津町'], [21, '下呂市'], [28, '神戸市']]], ['f2', '日本三大夜景', '夜景', [[1, '函館市'], [28, '神戸市'], [42, '長崎市']]],
+ ['f3', '日本三名園', '名園', [[17, '金沢市'], [33, '岡山市'], [8, '水戸市']]], ['f4', '日本三大秘境', '秘境', [[21, '白川村'], [36, '三好市'], [45, '椎葉村']]]]
+  .forEach(([id, nm, tx, list]) => B.push({id, page: 'fm', name: nm, tx, cond: list.map(x => x[1]).join('・') + 'をすべて塗る', hint: '「日本三大〇〇」の場所を…', test: () => allAt(list)}));
+/* コレクション */
+COLLECTIONS.forEach((c, k) => B.push({id: 'c' + c.id, page: 'co', name: c.name, tx: ['県庁', '政令', 'かな', '一字', '長名', '魅力'][k], cond: `コレクション「${c.name}」を達成する`, hint: 'コレクションをどれか…', test: x => { const st = x.cols && x.cols.find(s => s.c === c); return !!st && st.N > 0 && st.n === st.N; }}));
+/* 都道府県パーフェクト */
+PREFS.forEach((n, k) => B.push({id: 'pp' + pc(k + 1), page: 'pr', pref: k + 1, name: `${n}パーフェクト`, lbl: n, cond: `${n}の市区町村をすべて塗る`, hint: 'どこかの都道府県の市区町村をすべて…', test: x => loaded.has(k + 1) && x.tot[k + 1] > 0 && x.by[k + 1] >= x.tot[k + 1]}));
+
+const earned = new Map(); // id -> 獲得日時
+let badgeTimer = null, badgeBooted = false;
+function scheduleBadges() { clearTimeout(badgeTimer); badgeTimer = setTimeout(checkBadges, 400); }
+function badgeCtx() {
+  const ready = loaded.size === 47, tot = prefTotals(), by = Array(48).fill(0);
+  for (const c of visits.keys()) by[+c.slice(0, 2)]++;
+  let area = 0, all = 0; for (const [c, a] of areas) { all += a; if (visits.has(c)) area += a; }
+  return {ready, tot, by, area, all, N: meta.size, nV: visits.size, nP: prefV.size, nPh: photos.length, cols: ready ? colStats() : null};
+}
+async function checkBadges() {
+  const x = badgeCtx(), got = [];
+  for (const b of B) { if (earned.has(b.id)) continue; let ok = false; try { ok = b.test(x); } catch (e) {} if (ok) got.push(b); }
+  if (!got.length) return;
+  const t = Date.now();
+  for (const b of got) { earned.set(b.id, t); try { await put('badges', {id: b.id, ts: t}); } catch (e) {} }
+  toast(got.length === 1 ? `スタンプを獲得しました：${got[0].name}` : `スタンプを${got.length}個獲得しました`);
+  if (tab === 'badge') renderBadges();
+}
+
+/* スタンプの絵 */
+const badgeShapes = new Map();
+function prefShape(i) {
+  if (badgeShapes.has(i)) return badgeShapes.get(i);
+  let polys = [];
+  const f = outlineGJ && outlineGJ.features.find(f => +(f.properties.id) === i || f.properties.nam_ja === PREFS[i - 1]);
+  const add = g => { if (!g) return; if (g.type === 'Polygon') polys.push(g.coordinates[0]); if (g.type === 'MultiPolygon') g.coordinates.forEach(p => polys.push(p[0])); };
+  if (f) add(f.geometry); else allLayers.filter(l => +l._code.slice(0, 2) === i).forEach(l => add(l.feature.geometry));
+  if (!polys.length) return null;
+  const ar = polys.map(r => ringArea(r)), mx = Math.max(...ar);
+  polys = polys.filter((r, k) => ar[k] >= mx * .03);
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  const k = Math.cos(polys[0][0][1] * Math.PI / 180);
+  for (const r of polys) for (const [x, y] of r) { x0 = Math.min(x0, x * k); x1 = Math.max(x1, x * k); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const sc = 30 / Math.max(x1 - x0, y1 - y0), ox = 32 - (x1 - x0) * sc / 2, oy = 30 - (y1 - y0) * sc / 2;
+  const d = polys.map(r => { const step = Math.max(1, Math.floor(r.length / 160)); let s = ''; for (let j = 0; j < r.length; j += step) { const [x, y] = r[j]; s += (s ? 'L' : 'M') + (ox + (x * k - x0) * sc).toFixed(1) + ' ' + (oy + (y1 - y) * sc).toFixed(1); } return s + 'Z'; }).join('');
+  badgeShapes.set(i, d); return d;
+}
+const ROT = [-8, 5, -3, 9, -6, 3, -10, 6, -4, 8, -5, 4, -7, 2];
+function stampSVG(b, on, k = 0) {
+  if (!on) {
+    const inner = b.show ? `<text x="32" y="37" text-anchor="middle" font-family="DM Serif Display" font-size="${b.v.length > 3 ? 12 : 15}" fill="#c9bdac">${b.v}</text>` : '<text x="32" y="36.5" text-anchor="middle" font-family="Noto Serif JP" font-weight="600" font-size="11" fill="#c9bdac">未</text>';
+    return `<svg class="stamp" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="#cfc4b4" stroke-width="1.2" stroke-dasharray="2 3"/>${inner}</svg>`;
+  }
+  let c = INK[b.ink || b.page], inner = '';
+  if (b.pref) { const pv = prefV.get(pc(b.pref)); if (pv && !coverOf(pv)) c = pv.color; const d = prefShape(b.pref); inner = d ? `<path d="${d}" fill="${c}" opacity=".9"/>` : `<text x="32" y="35" text-anchor="middle" font-family="Noto Serif JP" font-weight="900" font-size="11" fill="${c}">${PREFS[b.pref - 1].replace(/[都府県]$/, '')}</text>`; }
+  else if (b.icon === 'cam') inner = `<g transform="translate(32 29)"><rect x="-9" y="-6" width="18" height="13" rx="2" fill="none" stroke="${c}" stroke-width="1.6"/><circle r="3.6" fill="none" stroke="${c}" stroke-width="1.6"/></g>`;
+  else if (b.icon === 'arr') inner = `<g transform="translate(32 29) rotate(${b.rot})"><path d="M0 -10 L5 4 L0 1 L-5 4 Z" fill="${c}"/></g>`;
+  else if (b.tx) inner = `<text x="32" y="${b.tx.length > 2 ? 35 : 36.5}" text-anchor="middle" font-family="Noto Serif JP" font-weight="900" font-size="${b.tx.length > 2 ? 11 : 14}" fill="${c}">${b.tx}</text>`;
+  else inner = `<text x="32" y="34" text-anchor="middle" font-family="DM Serif Display" font-size="${b.v.length > 3 ? 13 : 17}" fill="${c}">${b.v}</text>`;
+  const lbl = b.tx ? '' : (b.lbl || '').slice(0, 7);
+  return `<svg class="stamp" viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(${ROT[k % ROT.length]} 32 32)" opacity=".9"><circle cx="32" cy="32" r="27" fill="none" stroke="${c}" stroke-width="2.2"/><circle cx="32" cy="32" r="23" fill="none" stroke="${c}" stroke-width=".8"/>${inner}${lbl ? `<text x="32" y="48.5" text-anchor="middle" font-family="Noto Serif JP" font-weight="600" font-size="5.5" fill="${c}">${lbl}</text>` : ''}<text x="32" y="14" text-anchor="middle" font-family="DM Serif Display" font-size="5" letter-spacing=".5" fill="${c}">NURI MAP</text></g></svg>`;
+}
+function renderBadges() {
+  const n = earned.size, idx = new Map(B.map((b, k) => [b.id, k]));
+  const recent = B.filter(b => earned.has(b.id)).sort((a, b) => earned.get(b.id) - earned.get(a.id)).slice(0, 8);
+  const cell = b => `<button data-badge="${b.id}" aria-label="${earned.has(b.id) || b.show ? esc(b.name) : '未獲得のスタンプ'}">${stampSVG(b, earned.has(b.id), idx.get(b.id))}</button>`;
+  $('#p-badge').innerHTML = `<h2>Badges</h2>
+  <div class="bcount"><b>${n}</b><span>/ ${B.length} 獲得</span></div><div class="bbar"><i style="width:${n / B.length * 100}%"></i></div>
+  ${recent.length ? `<div class="sec-h" style="margin-top:14px"><h3>Recent</h3><small>最近押したスタンプ</small></div>
+  <div class="recent">${recent.map(b => `<button data-badge="${b.id}">${stampSVG(b, true, idx.get(b.id))}${esc(b.name)}</button>`).join('')}</div>` : '<p class="soon" style="margin-top:14px">市区町村や都道府県を塗ると、スタンプが押されていきます</p>'}
+  <div class="sec-h" style="margin-top:18px"><h3>Stamp book</h3><small>種類ごとのページ</small></div>
+  ${PAGES.map(([id, en, ja]) => { const list = B.filter(b => b.page === id), got = list.filter(b => earned.has(b.id)).length;
+    const body = id === 'pr' ? REGIONS.map(([rn, [a, z]]) => `<p class="sub-h">${rn}</p><div class="stamps">${list.filter(b => b.pref >= a && b.pref <= z).map(cell).join('')}</div>`).join('') : `<div class="stamps">${list.map(cell).join('')}</div>`;
+    return `<div class="page"><div class="page-h"><b>${en}<small>${ja}</small></b><span>${got} / ${list.length}</span></div>${body}</div>`; }).join('')}`;
+}
+function openBadge(id) {
+  const b = B.find(x => x.id === id); if (!b) return;
+  const on = earned.has(id), vis = on || b.show;
+  $('#bdlgBody').innerHTML = `<div class="big">${stampSVG(b, on, 1)}</div><h4>${vis ? esc(b.name) : '？？？'}</h4><p>${vis ? esc(b.cond) : esc(b.hint || '条件はひみつです')}</p>${on ? `<p class="when">${fmt(earned.get(id))} 獲得</p>` : '<p style="margin-top:10px">まだ獲得していません</p>'}`;
+  $('#bdlg').showModal();
+}
+$('#p-badge').addEventListener('click', e => { const b = e.target.closest('[data-badge]'); if (b) openBadge(b.dataset.badge); });
+$('#bdlgClose').onclick = () => $('#bdlg').close();
+$('#bdlg').addEventListener('click', e => { if (e.target.id === 'bdlg') $('#bdlg').close(); });
 
 /* 区ごとに塗っていた記録を市にまとめる */
 async function mergeWards() {
@@ -846,8 +991,10 @@ async function mergeWards() {
     for (const v of await getAll('visits')) { v.color = migrate(v.color); visits.set(v.code, v); }
     for (const v of await getAll('prefs')) { v.color = migrate(v.color); prefV.set(v.code, v); }
     photos = await getAll('photos');
+    for (const b of await getAll('badges')) earned.set(b.id, b.ts);
   } catch (e) { toast('この端末のブラウザでは保存が使えません'); }
   await mergeWards();
+  { const h = document.querySelector('header'), setH = () => document.documentElement.style.setProperty('--hh', h.offsetHeight + 'px'); setH(); const hro = new ResizeObserver(setH); hro.observe(h); }
   showModeSw();
   renderCounts();
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
