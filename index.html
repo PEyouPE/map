@@ -6,87 +6,96 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ぬりつぶし">
-<meta name="theme-color" content="#1d3a4f">
+<meta name="theme-color" content="#f6f3ef">
 <title>市町村ぬりつぶし</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap">
 <style>
-:root{--ink:#1b2a35;--sub:#5d6b76;--line:#e3e6e9;--bg:#fff;--navy:#1d3a4f;--shu:#e5502f;--shu-d:#b8321f;--soft:#f3f5f7;
+:root{--ink:#3f3b37;--sub:#8a837b;--line:#e4ded6;--bg:#f6f3ef;--card:#fffdfa;--soft:#eee9e2;--acc:#a9776a;--acc-d:#8a5d51;
+  --sea:#d3dbdb;--land:#e7e1d8;
   --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden}
-body{font:16px/1.5 "Hiragino Sans","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
-button{font:inherit;color:inherit;cursor:pointer}
-header{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--navy);color:#fff;padding:calc(var(--st) + 10px) 12px 10px}
+body{font:16px/1.55 "Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+button,input{font:inherit;color:inherit}button{cursor:pointer}
+header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(246,243,239,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:calc(var(--st) + 10px) 12px 10px}
 .top{display:flex;align-items:baseline;gap:12px;padding:0 4px 8px}
-header h1{font-size:17px;margin:0;font-weight:700}
-#count{margin-left:auto;font-size:13px;opacity:.92;white-space:nowrap}#count b{font-size:22px;color:#ffb39f;margin-right:2px}
+header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.04em}
+#count{margin-left:auto;font-size:13px;color:var(--sub);white-space:nowrap}#count b{font-size:22px;color:var(--acc-d);margin-right:3px}
 .search{position:relative}
-#q{width:100%;height:44px;border:0;border-radius:10px;padding:0 14px 0 40px;font:16px inherit;font-family:inherit;background:#fff;color:var(--ink)}
+#q{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;padding:0 14px 0 40px;font-size:16px;background:var(--card)}
+#q:focus{outline:2px solid var(--acc);outline-offset:0}
 .search svg{position:absolute;left:12px;top:12px;width:20px;height:20px;color:var(--sub);pointer-events:none}
-#results{position:absolute;left:0;right:0;top:48px;background:#fff;color:var(--ink);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);overflow:hidden;display:none;max-height:50vh;overflow-y:auto}
+#results{position:absolute;left:0;right:0;top:50px;background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(60,50,40,.18);display:none;max-height:50vh;overflow-y:auto}
 #results.on{display:block}
 #results button{display:flex;width:100%;border:0;background:none;text-align:left;padding:10px 14px;min-height:48px;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
 #results small{color:var(--sub)}
-#results i{width:12px;height:12px;border-radius:3px;flex:none;margin-left:auto;background-size:cover}
-#loadinfo{font-size:12px;opacity:.75;margin:6px 4px 0}#loadinfo:empty{display:none}
-#map{position:fixed;inset:0;z-index:1;background:#dfe7ec}
-.leaflet-top{top:calc(var(--st) + 118px)}
-.leaflet-control-attribution{font-size:10px}
+#results i{width:14px;height:14px;border-radius:4px;flex:none;margin-left:auto;background-size:cover;background-position:center}
+#loadinfo{font-size:12px;color:var(--sub);margin:6px 4px 0}#loadinfo:empty{display:none}
+#map{position:fixed;inset:0;z-index:1;background:var(--sea)}
+.leaflet-container{background:var(--sea);font-family:inherit}
+.leaflet-control-attribution{font-size:10px;background:rgba(246,243,239,.8)!important;color:var(--sub)}
 .leaflet-bottom{bottom:calc(56px + var(--sb))}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:var(--sb)}
+.seg{position:fixed;left:12px;top:calc(var(--st) + 124px);z-index:900;display:flex;background:var(--card);border-radius:999px;padding:4px;box-shadow:0 4px 16px rgba(60,50,40,.14)}
+.seg button{border:0;background:none;border-radius:999px;min-height:38px;padding:0 16px;font-size:14px;font-weight:700;color:var(--sub)}
+.seg button[aria-pressed=true]{background:var(--acc);color:#fff}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:var(--sb)}
 nav button{border:0;background:none;height:56px;font-size:12px;color:var(--sub);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 nav button svg{width:22px;height:22px}
-nav button[aria-current=true]{color:var(--shu-d);font-weight:700}
+nav button[aria-current=true]{color:var(--acc-d);font-weight:700}
 .panel{position:fixed;left:0;right:0;top:0;bottom:calc(56px + var(--sb));z-index:950;background:var(--bg);overflow-y:auto;padding:calc(var(--st) + 128px) 16px 32px;display:none}
 .panel.on{display:block}
 .panel h2{font-size:20px;margin:8px 0 12px}
 .big{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:20px}
-.big div{background:var(--soft);border-radius:12px;padding:12px}.big b{display:block;font-size:28px;line-height:1.1;color:var(--shu-d)}.big span{font-size:13px;color:var(--sub)}
+.big div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}.big b{display:block;font-size:28px;line-height:1.1;color:var(--acc-d)}.big span{font-size:13px;color:var(--sub)}
 .pref{border-bottom:1px solid var(--line)}
-.pref summary{list-style:none;display:grid;grid-template-columns:5.5em minmax(0,1fr) 4.5em;gap:10px;align-items:center;padding:10px 0;min-height:44px;cursor:pointer}
+.pref summary{list-style:none;display:grid;grid-template-columns:6.5em minmax(0,1fr) 4.5em;gap:10px;align-items:center;padding:10px 0;min-height:44px;cursor:pointer}
 .pref summary::-webkit-details-marker{display:none}
-.bar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--shu)}
+.pref summary>span:first-child{display:flex;align-items:center;gap:6px}
+.bar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
 .num{text-align:right;font-size:13px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 12px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px 6px 8px;font-size:14px;min-height:36px;display:flex;align-items:center;gap:6px}
-.chip i,.dot{width:14px;height:14px;border-radius:4px;flex:none;background-size:cover;background-position:center}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px 6px 8px;font-size:14px;min-height:36px;display:flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:4px;flex:none;background-size:cover;background-position:center;display:inline-block}
+.dot.none{background:transparent;border:1px dashed var(--line)}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:4px}
-.ph{border:0;padding:0;aspect-ratio:1;background:var(--soft);border-radius:6px;overflow:hidden;position:relative}
+.ph{border:0;padding:0;aspect-ratio:1;background:var(--soft);border-radius:8px;overflow:hidden;position:relative}
 .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.ph span{position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:10px 6px 4px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ph.cover{outline:3px solid var(--shu);outline-offset:-3px}
-.ph.cover::after{content:"塗り中";position:absolute;top:4px;left:4px;background:var(--shu);color:#fff;font-size:11px;border-radius:4px;padding:1px 5px}
-.empty{color:var(--sub);background:var(--soft);border-radius:12px;padding:20px;text-align:center}
-.btn{border:1px solid var(--line);background:#fff;border-radius:10px;min-height:44px;padding:0 16px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
-.btn.pri{background:var(--shu);border-color:var(--shu);color:#fff}
-.btn.danger{color:#c0261b;border-color:#f0c9c4}
+.ph span{position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;background:linear-gradient(transparent,rgba(40,30,20,.55));padding:10px 6px 4px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph.cover{outline:3px solid var(--acc);outline-offset:-3px}
+.ph.cover::after{content:"塗り中";position:absolute;top:4px;left:4px;background:var(--acc);color:#fff;font-size:11px;border-radius:4px;padding:1px 6px}
+.empty{color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;min-height:44px;padding:0 16px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.danger{color:#a2483e;border-color:#ead0cb}
 .btn svg{width:20px;height:20px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .set{border-bottom:1px solid var(--line);padding:14px 0}.set p{margin:4px 0 0;font-size:13px;color:var(--sub)}
-#sheet{position:fixed;left:0;right:0;bottom:0;z-index:1200;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);max-height:70vh;overflow-y:auto;padding:8px 16px calc(20px + var(--sb));transform:translateY(105%);transition:transform .25s ease}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:1200;background:var(--card);border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(60,50,40,.16);max-height:70vh;overflow-y:auto;padding:8px 16px calc(20px + var(--sb));transform:translateY(105%);transition:transform .25s ease}
 #sheet.open{transform:none}
 .grip{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}
-.sh-head{display:flex;align-items:flex-start;gap:8px}.sh-head h3{font-size:24px;margin:0;line-height:1.2}
+.sh-head{display:flex;align-items:flex-start;gap:8px}.sh-head h3{font-size:24px;margin:0;line-height:1.25}
 .sh-head .p{margin:0;font-size:13px;color:var(--sub)}
 .x{margin-left:auto;border:0;background:var(--soft);border-radius:999px;width:40px;height:40px;font-size:20px;flex:none}
-.status{margin:6px 0 0;font-size:14px;color:var(--sub)}.status.done{color:var(--ink);font-weight:600}
+.status{margin:6px 0 0;font-size:14px;color:var(--sub)}.status.done{color:var(--ink)}
 .lbl{font-size:13px;color:var(--sub);margin:14px 0 6px}
 .sw{display:flex;gap:8px;flex-wrap:wrap}
-.sw button{width:44px;height:44px;border-radius:12px;border:3px solid #fff;box-shadow:0 0 0 1px var(--line);padding:0}
+.sw button{width:44px;height:44px;border-radius:14px;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line);padding:0}
 .sw button[aria-pressed=true]{box-shadow:0 0 0 3px var(--ink)}
-.sw .phbtn{width:auto;padding:0 14px;background:var(--soft);font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;border-color:var(--soft)}
+.sw .phbtn{width:auto;padding:0 14px;background:var(--soft);font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;border-color:var(--soft)}
 .sw .phbtn svg{width:20px;height:20px}
 #sheet details{margin-top:14px;font-size:14px}#sheet summary{min-height:40px;cursor:pointer;color:var(--sub)}
 #sheet ul{margin:4px 0 12px;padding-left:20px}
-#banner{position:fixed;left:12px;right:12px;top:calc(var(--st) + 124px);z-index:1050;background:#fff;color:var(--ink);border-left:5px solid var(--shu);box-shadow:0 6px 20px rgba(0,0,0,.18);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:10px;font-size:14px}
+#banner{position:fixed;left:12px;right:12px;top:calc(var(--st) + 176px);z-index:1050;background:var(--card);border-left:5px solid var(--acc);box-shadow:0 6px 20px rgba(60,50,40,.16);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:10px;font-size:14px}
 #banner.on{display:flex}#banner button{margin-left:auto;background:var(--soft);border:0;border-radius:8px;min-height:36px;padding:0 12px;font-weight:700;flex:none}
-#toast{position:fixed;left:50%;bottom:calc(80px + var(--sb));transform:translate(-50%,20px);z-index:1500;background:rgba(20,30,38,.92);color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(80px + var(--sb));transform:translate(-50%,20px);z-index:1500;background:rgba(63,59,55,.92);color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
-#lb{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.92);display:none;flex-direction:column;color:#fff}
+#lb{position:fixed;inset:0;z-index:1400;background:rgba(30,26,22,.94);display:none;flex-direction:column;color:#fff}
 #lb.on{display:flex}#lb img{flex:1;min-height:0;width:100%;object-fit:contain}
 #lb .cap{padding:12px 16px calc(14px + var(--sb));display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#lb .cap div{flex:1 1 100%;font-size:14px}#lb .btn{background:transparent;color:#fff;border-color:#555}#lb .btn.pri{background:var(--shu);border-color:var(--shu)}
-dialog{border:0;border-radius:16px;padding:20px;max-width:340px;width:calc(100% - 32px)}dialog::backdrop{background:rgba(0,0,0,.45)}
+#lb .cap div{flex:1 1 100%;font-size:14px}#lb .btn{background:transparent;color:#fff;border-color:#5a534c}#lb .btn.pri{background:var(--acc);border-color:var(--acc)}
+dialog{border:0;border-radius:18px;padding:20px;max-width:340px;width:calc(100% - 32px);background:var(--card);color:var(--ink)}dialog::backdrop{background:rgba(40,30,20,.4)}
 dialog p{margin:0 0 16px}
 @media (prefers-reduced-motion:reduce){#sheet,#toast{transition:none}}
 input[type=file]{display:none}
@@ -94,15 +103,16 @@ input[type=file]{display:none}
 </head>
 <body>
 <header>
-  <div class="top"><h1>市町村ぬりつぶし</h1><div id="count"><b>0</b>市区町村</div></div>
+  <div class="top"><h1>ぬりつぶし日本</h1><div id="count"></div></div>
   <div class="search">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-    <input id="q" type="search" placeholder="市区町村名で探す（例：札幌、小樽）" autocomplete="off" enterkeyhint="search">
+    <input id="q" type="search" placeholder="市区町村・都道府県名で探す" autocomplete="off" enterkeyhint="search">
     <div id="results"></div>
   </div>
   <p id="loadinfo"></p>
 </header>
 <div id="map"></div>
+<div class="seg" id="seg"><button data-mode="muni" aria-pressed="true">市区町村</button><button data-mode="pref" aria-pressed="false">都道府県</button></div>
 <div id="banner"><span id="bannerText"></span><button id="bannerCancel">やめる</button></div>
 
 <section class="panel" id="p-rec"></section>
@@ -113,9 +123,9 @@ input[type=file]{display:none}
     <div class="row"><button class="btn" id="btnExport">書き出す</button><button class="btn" id="btnImport">読み込む</button></div></div>
   <div class="set"><b>地図データ</b><p id="dataInfo">市区町村境界を読み込み中…</p>
     <div class="row"><button class="btn" id="btnReload">境界データを再読み込み</button></div></div>
-  <div class="set"><b>すべて消去</b><p>塗った記録と写真をこの端末から削除します。</p>
+  <div class="set"><b>すべて消去</b><p>市区町村・都道府県の塗りと写真をこの端末から削除します。</p>
     <div class="row"><button class="btn danger" id="btnWipe">すべて消去する</button></div></div>
-  <div class="set"><p>地図：<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>／境界：国土交通省「国土数値情報（行政区域データ）」をSmartNews Media Research Instituteが加工したもの（2021年1月時点の区分）。</p></div>
+  <div class="set"><p>境界：国土交通省「国土数値情報（行政区域データ）」をSmartNews Media Research Instituteが加工したもの（2021年1月時点の区分）。都道府県の境界線：dataofjapan/land。</p></div>
 </section>
 
 <div id="sheet"></div>
@@ -141,8 +151,11 @@ input[type=file]{display:none}
 {
 const $ = s => document.querySelector(s);
 const PREFS = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
-const COLORS = [['朱','#e5502f'],['橙','#f0932b'],['黄','#eec33a'],['緑','#3fa45b'],['水','#2fa4c9'],['青','#2f62c9'],['紫','#8a55c2'],['桃','#e2679a']];
+const COLORS = [['テラコッタ','#c4846c'],['アプリコット','#d4a27a'],['マスタード','#cdb071'],['セージ','#9fb09a'],['ミスト','#92b3b5'],['ブルーグレー','#8a9db5'],['ラベンダー','#a99bb8'],['ローズ','#c99ca3']];
+const OLD = ['#e5502f','#f0932b','#eec33a','#3fa45b','#2fa4c9','#2f62c9','#8a55c2','#e2679a'];
+const LAND = '#e7e1d8', EDGE = '#fbf9f6';
 const pc = i => String(i).padStart(2, '0');
+const isPref = c => c.length === 2;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = t => new Date(t).toLocaleDateString('ja-JP', {year:'numeric', month:'short', day:'numeric'});
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -151,11 +164,12 @@ const ICON_PHOTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 /* ---------- 保存（IndexedDB） ---------- */
 let dbp;
 const db = () => dbp || (dbp = new Promise((res, rej) => {
-  const r = indexedDB.open('muni-nuri', 1);
+  const r = indexedDB.open('muni-nuri', 2);
   r.onupgradeneeded = () => {
-    const d = r.result;
-    d.createObjectStore('visits', {keyPath: 'code'});
-    d.createObjectStore('photos', {keyPath: 'id', autoIncrement: true}).createIndex('code', 'code');
+    const d = r.result, has = n => d.objectStoreNames.contains(n);
+    if (!has('visits')) d.createObjectStore('visits', {keyPath: 'code'});
+    if (!has('photos')) d.createObjectStore('photos', {keyPath: 'id', autoIncrement: true}).createIndex('code', 'code');
+    if (!has('prefs')) d.createObjectStore('prefs', {keyPath: 'code'});
   };
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 }));
@@ -174,80 +188,109 @@ const del = (st, k) => tx(st, 'readwrite', s => s.delete(k));
 const clearStore = st => tx(st, 'readwrite', s => s.clear());
 
 /* ---------- 状態 ---------- */
-const visits = new Map();      // code -> {code,name,pref,color,coverId,dates[],first}
-let photos = [];               // {id,code,blob,thumb,ts}
+const visits = new Map();      // 市区町村 code(5桁) -> {code,name,pref,color,coverId,dates[],first}
+const prefV = new Map();       // 都道府県 code(2桁) -> {code,name,color,coverId,dates[],first}
+let photos = [];               // {id,code(5桁 or 2桁),blob,thumb,ts}
 const meta = new Map();        // code -> {name,pref}
 const layers = new Map();      // code -> [canvasレイヤー]
+const allLayers = [];
 const loaded = new Set();
 const urls = new Map();
 const thumbURL = p => { const k = 't' + p.id; if (!urls.has(k)) urls.set(k, URL.createObjectURL(p.thumb || p.blob)); return urls.get(k); };
+const recOf = c => (isPref(c) ? prefV : visits).get(c);
+const storeOf = c => isPref(c) ? 'prefs' : 'visits';
+const label = c => isPref(c) ? PREFS[+c - 1] : ((visits.get(c) || meta.get(c) || {}).name || c);
 let current = null, assignQueue = [];
+let mode = 'muni';
 let lastColor = COLORS[0][1];
-try { lastColor = localStorage.getItem('nuri-color') || lastColor; } catch (e) {}
-const coverOf = v => v && v.coverId != null ? photos.find(p => p.id === v.coverId && p.code === v.code) : null;
+try { lastColor = localStorage.getItem('nuri-color') || lastColor; mode = localStorage.getItem('nuri-mode') || 'muni'; } catch (e) {}
+const migrate = c => { const i = OLD.indexOf(c); return i >= 0 ? COLORS[i][1] : c; };
+lastColor = migrate(lastColor);
+const coverOf = v => v && v.coverId != null ? photos.find(p => p.id === v.coverId && (p.code === v.code || (isPref(v.code) && p.code.slice(0, 2) === v.code))) : null;
 const swatchCSS = v => { const c = coverOf(v); return c ? `background-image:url(${thumbURL(c)})` : `background:${v.color || lastColor}`; };
 
-/* ---------- 地図 ---------- */
-const map = L.map('map', {zoomControl: false, preferCanvas: true}).setView([37.5, 137.5], 5);
-L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
-  minZoom: 4, maxZoom: 18,
-  attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>｜境界：国土数値情報（行政区域）を加工'
-}).addTo(map);
+/* ---------- 地図（背景画像なしのシンプルな地図） ---------- */
+const map = L.map('map', {zoomControl: false, preferCanvas: true, attributionControl: true}).setView([37.5, 137.5], 5);
+map.attributionControl.setPrefix('').addAttribution('境界：国土数値情報（行政区域）を加工');
+map.createPane('outline').style.zIndex = 450;
+map.getPane('outline').style.pointerEvents = 'none';
 const renderer = L.canvas({padding: .3, tolerance: 4});
+const outlineR = L.canvas({padding: .3, pane: 'outline'});
 const svgR = L.svg({padding: .5});
 function style(code) {
+  const base = {renderer, stroke: true, opacity: 1, fillOpacity: 1};
+  if (mode === 'pref') {
+    const pv = prefV.get(code.slice(0, 2)), c = pv && !coverOf(pv) ? pv.color : LAND;
+    return {...base, color: c, weight: .6, fillColor: c};
+  }
   const v = visits.get(code);
-  if (!v) return {renderer, color: '#5b6b78', weight: .6, opacity: .55, fillColor: '#ffffff', fillOpacity: .03};
-  if (coverOf(v)) return {renderer, color: '#1b2a35', weight: 1.2, opacity: .9, fillOpacity: 0};
-  return {renderer, color: v.color, weight: 1.2, opacity: 1, fillColor: v.color, fillOpacity: .6};
+  return {...base, color: EDGE, weight: .7, fillColor: v && !coverOf(v) ? v.color : LAND};
+}
+const restyleAll = () => allLayers.forEach(l => l.setStyle(style(l._code)));
+
+/* 都道府県の境界線（見た目用） */
+let outlineLayer = null;
+async function loadOutline() {
+  if (outlineLayer) return;
+  try {
+    const gj = await fetchJSON(['https://cdn.jsdelivr.net/gh/dataofjapan/land@master/japan.geojson', 'https://raw.githubusercontent.com/dataofjapan/land/master/japan.geojson']);
+    outlineLayer = L.geoJSON(gj, {renderer: outlineR, interactive: false, style: {renderer: outlineR, color: EDGE, weight: 1.6, opacity: .95, fill: false}}).addTo(map);
+  } catch (e) {}
 }
 
-/* 写真で塗る：SVGパターンで市区町村の形に写真を切り抜く */
-const photoLayers = new Map(); // code -> {group, pats:[{el,img,layer}], url}
+/* 写真で塗る：SVGパターンで形に写真を切り抜く */
+const photoLayers = new Map(); // code -> {group, el, img, bounds, url}
 function defs() {
   const svg = svgR._container; if (!svg) return null;
   let d = svg.querySelector('defs'); if (!d) { d = document.createElementNS(SVGNS, 'defs'); svg.insertBefore(d, svg.firstChild); }
   return d;
 }
-function placePatterns(entry) {
-  for (const p of entry.pats) {
-    const b = p.layer.getBounds();
-    const a = map.latLngToLayerPoint(b.getNorthWest()), z = map.latLngToLayerPoint(b.getSouthEast());
-    const w = Math.max(1, z.x - a.x), h = Math.max(1, z.y - a.y);
-    p.el.setAttribute('x', a.x); p.el.setAttribute('y', a.y); p.el.setAttribute('width', w); p.el.setAttribute('height', h);
-    p.img.setAttribute('width', w); p.img.setAttribute('height', h);
-  }
+function placePattern(e) {
+  const a = map.latLngToLayerPoint(e.bounds.getNorthWest()), z = map.latLngToLayerPoint(e.bounds.getSouthEast());
+  const w = Math.max(1, z.x - a.x), h = Math.max(1, z.y - a.y);
+  e.el.setAttribute('x', a.x); e.el.setAttribute('y', a.y); e.el.setAttribute('width', w); e.el.setAttribute('height', h);
+  e.img.setAttribute('width', w); e.img.setAttribute('height', h);
 }
 function clearPhotoLayer(code) {
   const e = photoLayers.get(code); if (!e) return;
-  map.removeLayer(e.group); e.pats.forEach(p => p.el.remove()); URL.revokeObjectURL(e.url); photoLayers.delete(code);
+  map.removeLayer(e.group); e.el.remove(); URL.revokeObjectURL(e.url); photoLayers.delete(code);
 }
+const prefLayers = p => allLayers.filter(l => l._code.slice(0, 2) === p);
 function drawPhotoLayer(code) {
   clearPhotoLayer(code);
-  const cov = coverOf(visits.get(code)), ls = layers.get(code);
-  if (!cov || !ls) return;
-  const url = URL.createObjectURL(cov.blob), group = L.featureGroup().addTo(map), pats = [];
-  ls.forEach((l, i) => {
-    const sub = L.GeoJSON.geometryToLayer(l.feature, {renderer: svgR, color: '#ffffff', weight: 1.5, opacity: .9, fillOpacity: 1});
-    group.addLayer(sub);
-    const d = defs(); if (!d) return;
-    const id = `pt-${code}-${i}-${Date.now()}`;
-    const el = document.createElementNS(SVGNS, 'pattern'); el.setAttribute('id', id); el.setAttribute('patternUnits', 'userSpaceOnUse');
-    const img = document.createElementNS(SVGNS, 'image');
-    img.setAttribute('href', url); img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', url);
-    img.setAttribute('preserveAspectRatio', 'xMidYMid slice'); img.setAttribute('x', 0); img.setAttribute('y', 0);
-    el.appendChild(img); d.appendChild(el);
-    sub.setStyle({fillColor: `url(#${id})`});
-    sub.on('click', e => { L.DomEvent.stop(e); onMuniTap(code); });
-    pats.push({el, img, layer: sub});
-  });
-  const entry = {group, pats, url};
-  photoLayers.set(code, entry); placePatterns(entry);
+  if ((mode === 'pref') !== isPref(code)) return;
+  const cov = coverOf(recOf(code)), ls = isPref(code) ? prefLayers(code) : layers.get(code);
+  if (!cov || !ls || !ls.length) return;
+  const url = URL.createObjectURL(cov.blob), group = L.featureGroup().addTo(map), subs = [];
+  for (const l of ls) {
+    const sub = L.GeoJSON.geometryToLayer(l.feature, {renderer: svgR, opacity: 1, fillOpacity: 1, weight: isPref(code) ? .8 : .7});
+    group.addLayer(sub); subs.push(sub);
+    const mc = l._code; sub.on('click', e => { L.DomEvent.stop(e); onMuniTap(mc); });
+  }
+  const d = defs(); if (!d) { map.removeLayer(group); URL.revokeObjectURL(url); return; }
+  const id = `pt-${code}-${Date.now()}`;
+  const el = document.createElementNS(SVGNS, 'pattern'); el.setAttribute('id', id); el.setAttribute('patternUnits', 'userSpaceOnUse');
+  const img = document.createElementNS(SVGNS, 'image');
+  img.setAttribute('href', url); img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', url);
+  img.setAttribute('preserveAspectRatio', 'xMidYMid slice'); img.setAttribute('x', 0); img.setAttribute('y', 0);
+  el.appendChild(img); d.appendChild(el);
+  subs.forEach(s => s.setStyle({fillColor: `url(#${id})`, color: isPref(code) ? `url(#${id})` : EDGE}));
+  const e = {group, el, img, url, bounds: L.featureGroup(ls).getBounds()};
+  photoLayers.set(code, e); placePattern(e);
 }
-map.on('zoomend viewreset', () => requestAnimationFrame(() => photoLayers.forEach(placePatterns)));
+map.on('zoomend viewreset', () => requestAnimationFrame(() => photoLayers.forEach(placePattern)));
 function refresh(code) {
-  (layers.get(code) || []).forEach(l => l.setStyle(style(code)));
+  (isPref(code) ? prefLayers(code) : (layers.get(code) || [])).forEach(l => l.setStyle(style(l._code)));
   drawPhotoLayer(code);
+}
+function setMode(m) {
+  mode = m; try { localStorage.setItem('nuri-mode', m); } catch (e) {}
+  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m));
+  closeSheet();
+  [...photoLayers.keys()].forEach(clearPhotoLayer);
+  restyleAll();
+  (m === 'pref' ? prefV : visits).forEach((v, c) => drawPhotoLayer(c));
+  renderCounts();
 }
 
 /* ---------- 市区町村境界データ ---------- */
@@ -275,6 +318,7 @@ function loadPref(i) {
       style: f => style(String(f.properties.N03_007).padStart(5, '0')),
       onEachFeature: (f, l) => {
         const code = String(f.properties.N03_007).padStart(5, '0');
+        l._code = code; allLayers.push(l);
         if (!meta.has(code)) meta.set(code, {name: nameOf(f.properties), pref: f.properties.N03_001 || PREFS[i - 1]});
         if (!layers.has(code)) layers.set(code, []);
         layers.get(code).push(l);
@@ -283,6 +327,7 @@ function loadPref(i) {
     }).addTo(map);
     loaded.add(i);
     for (const v of visits.values()) if (+v.code.slice(0, 2) === i) refresh(v.code);
+    if (prefV.has(pc(i))) refresh(pc(i));
     renderCounts();
   })();
   pending.set(i, p);
@@ -297,38 +342,38 @@ async function loadAll() {
   loadInfo(fail);
 }
 function loadInfo(fail) {
-  const n = loaded.size;
+  const n = loaded.size, empty = mode === 'pref' ? !prefV.size : !visits.size;
   $('#loadinfo').textContent = n < 47
-    ? (fail ? `境界データ ${n}/47（一部読み込めませんでした。設定から再読み込みできます）` : `地図を準備中 ${n}/47`)
-    : (visits.size ? '' : '行った市区町村をタップするか、上の検索で探して塗りましょう');
+    ? (fail ? `地図データ ${n}/47（一部読み込めませんでした。設定から再読み込みできます）` : `地図を準備中 ${n}/47`)
+    : (empty ? (mode === 'pref' ? '行った都道府県をタップして塗りましょう' : '行った市区町村をタップして塗りましょう') : '');
   $('#dataInfo').textContent = `${n}/47 都道府県分の境界を読み込み済み・${meta.size} 市区町村`;
 }
 
 /* ---------- 記録 ---------- */
 async function paint(code, opts = {}) {
-  let v = visits.get(code); const isNew = !v; const t = Date.now();
+  const M = isPref(code) ? prefV : visits;
+  let v = M.get(code); const isNew = !v; const t = Date.now();
   if (!v) v = {code, dates: [t], first: t, color: lastColor, coverId: null};
   if (opts.color) { v.color = opts.color; v.coverId = null; lastColor = opts.color; try { localStorage.setItem('nuri-color', lastColor); } catch (e) {} }
   if (opts.coverId !== undefined) v.coverId = opts.coverId;
   if (!v.color) v.color = lastColor;
-  const m = meta.get(code);
-  v.name = m ? m.name : (v.name || code);
-  v.pref = m ? m.pref : (v.pref || PREFS[+code.slice(0, 2) - 1] || '');
-  visits.set(code, v);
-  await put('visits', v);
+  if (isPref(code)) v.name = PREFS[+code - 1];
+  else { const m = meta.get(code); v.name = m ? m.name : (v.name || code); v.pref = m ? m.pref : (v.pref || PREFS[+code.slice(0, 2) - 1] || ''); }
+  M.set(code, v);
+  await put(storeOf(code), v);
   refresh(code); renderCounts();
   if (isNew) toast(`${v.name} を塗りました`);
   return v;
 }
 async function addDay(code) {
-  const v = visits.get(code); if (!v) return;
+  const v = recOf(code); if (!v) return;
   const day = new Date().toDateString();
   if (v.dates.some(d => new Date(d).toDateString() === day)) return toast('今日の日付はもう記録されています');
-  v.dates.push(Date.now()); await put('visits', v); toast('今日の日付を追加しました');
+  v.dates.push(Date.now()); await put(storeOf(code), v); toast('今日の日付を追加しました');
 }
 async function unpaint(code) {
-  visits.delete(code); await del('visits', code);
-  for (const p of photos.filter(p => p.code === code)) await removePhoto(p.id, true);
+  (isPref(code) ? prefV : visits).delete(code); await del(storeOf(code), code);
+  for (const p of photos.filter(p => p.code === code)) await removePhoto(p.id);
   refresh(code); renderCounts();
 }
 
@@ -353,19 +398,17 @@ async function savePhoto(file, code) {
   return rec;
 }
 async function addPhotos(files, code) {
-  if (!visits.has(code)) await paint(code);
+  if (!recOf(code)) await paint(code);
   let ok = 0;
   for (const f of files) { try { await savePhoto(f, code); ok++; } catch (e) { toast('読み込めない画像がありました'); } }
-  if (ok) toast(`${ok}枚を ${visits.get(code).name} に追加しました`);
-  renderCounts(); if (tab === 'photo') renderPhotos(); if (current === code) openMuni(code);
+  if (ok) toast(`${ok}枚を ${label(code)} に追加しました`);
+  renderCounts(); if (tab === 'photo') renderPhotos(); if (current === code) openSheet(code);
 }
-async function removePhoto(id, quiet) {
-  const p = photos.find(x => x.id === id);
+async function removePhoto(id) {
   await del('photos', id);
   photos = photos.filter(x => x.id !== id);
   const k = 't' + id; if (urls.has(k)) { URL.revokeObjectURL(urls.get(k)); urls.delete(k); }
-  const v = p && visits.get(p.code);
-  if (!quiet && v && v.coverId === id) { v.coverId = null; await put('visits', v); refresh(v.code); }
+  for (const v of [...visits.values(), ...prefV.values()]) if (v.coverId === id) { v.coverId = null; await put(storeOf(v.code), v); refresh(v.code); }
 }
 /* 写真のEXIFから撮影日だけを読む */
 async function exifDate(file) {
@@ -404,67 +447,69 @@ function ask(text, okLabel = 'OK') {
 }
 function prefTotals() { const t = Array(48).fill(0); for (const c of meta.keys()) t[+c.slice(0, 2)]++; return t; }
 function renderCounts() {
-  const prefs = new Set([...visits.keys()].map(c => c.slice(0, 2)));
-  $('#count').innerHTML = `<b>${visits.size}</b>市区町村・${prefs.size}/47都道府県`;
+  $('#count').innerHTML = mode === 'pref' ? `<b>${prefV.size}</b>/47 都道府県` : `<b>${visits.size}</b>市区町村`;
   if (loaded.size === 47) loadInfo();
   if (tab === 'rec') renderRecords();
 }
 function renderRecords() {
   const tot = prefTotals(), by = Array.from({length: 48}, () => []);
   for (const v of visits.values()) { const i = +v.code.slice(0, 2); if (by[i]) by[i].push(v); }
-  const prefs = by.filter(a => a.length).length;
   $('#p-rec').innerHTML = `<h2>記録</h2>
-  <div class="big"><div><b>${visits.size}</b><span>市区町村${loaded.size === 47 ? `／${meta.size}` : ''}</span></div><div><b>${prefs}</b><span>都道府県／47</span></div><div><b>${photos.length}</b><span>枚の写真</span></div></div>
-  ${visits.size ? '' : '<p class="empty">まだ何も塗られていません。地図で市区町村をタップして塗りましょう。</p>'}
-  ${PREFS.map((n, k) => { const i = k + 1, list = by[i].sort((a, b) => a.code.localeCompare(b.code)), t = tot[i];
+  <div class="big"><div><b>${visits.size}</b><span>市区町村${loaded.size === 47 ? `／${meta.size}` : ''}</span></div><div><b>${prefV.size}</b><span>都道府県／47</span></div><div><b>${photos.length}</b><span>枚の写真</span></div></div>
+  ${visits.size || prefV.size ? '' : '<p class="empty">まだ何も塗られていません。地図でタップして塗りましょう。</p>'}
+  ${PREFS.map((n, k) => { const i = k + 1, list = by[i].sort((a, b) => a.code.localeCompare(b.code)), t = tot[i], pv = prefV.get(pc(i));
     const pct = t ? Math.round(list.length / t * 100) : 0;
-    return `<details class="pref"><summary><span>${n}</span><span class="bar"><i style="width:${pct}%"></i></span><span class="num">${list.length}${t ? '/' + t : ''}</span></summary>
-    ${list.length ? `<div class="chips">${list.map(v => `<button class="chip" data-code="${v.code}"><i style="${swatchCSS(v)}"></i>${esc(v.name)}</button>`).join('')}</div>` : ''}</details>`; }).join('')}`;
+    return `<details class="pref"><summary><span><i class="dot${pv ? '' : ' none'}" style="${pv ? swatchCSS(pv) : ''}"></i>${n}</span><span class="bar"><i style="width:${pct}%"></i></span><span class="num">${list.length}${t ? '/' + t : ''}</span></summary>
+    <div class="chips"><button class="chip" data-code="${pc(i)}">${pv ? '' : '<i class="dot none"></i>'}${pv ? `<i class="dot" style="${swatchCSS(pv)}"></i>` : ''}${n}全体</button>${list.map(v => `<button class="chip" data-code="${v.code}"><i class="dot" style="${swatchCSS(v)}"></i>${esc(v.name)}</button>`).join('')}</div></details>`; }).join('')}`;
 }
 function renderPhotos() {
   const ps = [...photos].sort((a, b) => b.ts - a.ts);
   $('#p-photo').innerHTML = `<h2>写真</h2>
   <div class="row"><button class="btn pri" id="btnPick">${ICON_PHOTO}写真を追加</button></div>
-  <p style="font-size:13px;color:var(--sub);margin:0 0 12px">写真を選んだあと、撮った市区町村を地図でタップして登録します。市区町村の画面から追加することもできます。</p>
-  ${ps.length ? `<div class="gal">${ps.map(p => { const v = visits.get(p.code);
-    return `<button class="ph${v && v.coverId === p.id ? ' cover' : ''}" data-ph="${p.id}"><img src="${thumbURL(p)}" alt="" loading="lazy"><span>${esc((v || meta.get(p.code) || {}).name || '')}</span></button>`; }).join('')}</div>` : '<p class="empty">まだ写真はありません</p>'}`;
+  <p style="font-size:13px;color:var(--sub);margin:0 0 12px">写真を選んだあと、地図で市区町村（都道府県モードなら都道府県）をタップして登録します。</p>
+  ${ps.length ? `<div class="gal">${ps.map(p => { const v = recOf(p.code);
+    return `<button class="ph${v && v.coverId === p.id ? ' cover' : ''}" data-ph="${p.id}"><img src="${thumbURL(p)}" alt="" loading="lazy"><span>${esc(label(p.code))}</span></button>`; }).join('')}</div>` : '<p class="empty">まだ写真はありません</p>'}`;
   $('#btnPick').onclick = () => $('#inPick').click();
 }
-function openMuni(code) {
+function openSheet(code) {
   current = code;
-  const v = visits.get(code), m = meta.get(code) || {name: v ? v.name : code, pref: v ? v.pref : ''};
-  const ps = photos.filter(p => p.code === code).sort((a, b) => b.ts - a.ts);
-  const cov = coverOf(v);
+  const P = isPref(code), v = recOf(code), cov = coverOf(v);
+  const m = P ? {name: PREFS[+code - 1], pref: '都道府県'} : (meta.get(code) || {name: v ? v.name : code, pref: v ? v.pref : ''});
+  const ps = photos.filter(p => P ? p.code.slice(0, 2) === code : p.code === code).sort((a, b) => b.ts - a.ts);
+  const sub = P ? (() => { const t = prefTotals()[+code], n = [...visits.keys()].filter(c => c.slice(0, 2) === code).length; return `市区町村 ${n}${t ? '/' + t : ''} を塗り済み`; })() : '';
   $('#sheet').innerHTML = `<div class="grip"></div>
   <div class="sh-head"><div><p class="p">${esc(m.pref)}</p><h3>${esc(m.name)}</h3></div><button class="x" data-act="close" aria-label="閉じる">×</button></div>
-  <p class="status${v ? ' done' : ''}">${v ? `塗った日 ${fmt(v.first)}${v.dates.length > 1 ? `・訪問 ${v.dates.length}日` : ''}` : 'まだ塗られていません。色か写真を選んで塗りましょう'}</p>
+  <p class="status${v ? ' done' : ''}">${v ? `塗った日 ${fmt(v.first)}${v.dates.length > 1 ? `・訪問 ${v.dates.length}日` : ''}` : 'まだ塗られていません。色か写真を選んで塗りましょう'}${sub ? `<br>${sub}` : ''}</p>
   <p class="lbl">色で塗る</p>
   <div class="sw">${COLORS.map(([n, c]) => `<button data-color="${c}" style="background:${c}" aria-label="${n}" aria-pressed="${!!v && !cov && v.color === c}"></button>`).join('')}</div>
   <p class="lbl">写真で塗る</p>
   <div class="sw"><button class="phbtn" data-act="cover" aria-pressed="${!!cov}">${ICON_PHOTO}${cov ? '別の写真で塗り直す' : '写真を選んで塗る'}</button>${ps.length && !cov ? '<span style="font-size:13px;color:var(--sub);align-self:center">下の写真をタップしても選べます</span>' : ''}</div>
-  <p class="lbl">写真${ps.length ? `（${ps.length}枚）` : ''}</p>
+  <p class="lbl">写真${ps.length ? `（${ps.length}枚）` : ''}${P && ps.length ? '・県内の市区町村の写真も含みます' : ''}</p>
   ${ps.length ? `<div class="gal">${ps.map(p => `<button class="ph${cov && cov.id === p.id ? ' cover' : ''}" data-ph="${p.id}"><img src="${thumbURL(p)}" alt=""></button>`).join('')}</div>` : ''}
   <div class="row"><button class="btn" data-act="photo">${ICON_PHOTO}写真を追加</button>${v ? '<button class="btn" data-act="today">今日も来た</button>' : ''}</div>
-  ${v ? `<details><summary>訪問日・塗りを消す</summary><ul>${v.dates.map(d => `<li>${fmt(d)}</li>`).join('')}</ul><button class="btn danger" data-act="unmark">塗りと写真を消す</button></details>` : ''}`;
+  ${v ? `<details><summary>訪問日・塗りを消す</summary><ul>${v.dates.map(d => `<li>${fmt(d)}</li>`).join('')}</ul><button class="btn danger" data-act="unmark">塗りを消す</button></details>` : ''}`;
   $('#sheet').classList.add('open');
 }
 const closeSheet = () => { $('#sheet').classList.remove('open'); current = null; };
 function flyTo(code) {
-  const ls = layers.get(code);
-  if (ls && ls.length) map.flyToBounds(L.featureGroup(ls).getBounds(), {padding: [40, 40], paddingBottomRight: [40, Math.round(innerHeight * .45)], maxZoom: 12});
+  const ls = isPref(code) ? prefLayers(code) : layers.get(code);
+  if (ls && ls.length) map.flyToBounds(L.featureGroup(ls).getBounds(), {paddingTopLeft: [30, 180], paddingBottomRight: [30, Math.round(innerHeight * .45)], maxZoom: isPref(code) ? 9 : 12});
+}
+function go(code) {
+  const want = isPref(code) ? 'pref' : 'muni';
+  if (mode !== want) setMode(want);
+  showTab('map'); flyTo(code); openSheet(code);
 }
 
 /* 写真タブから追加した写真を地図タップで割り当て */
 function setBanner() {
   $('#banner').classList.toggle('on', assignQueue.length > 0);
-  $('#bannerText').textContent = `写真 ${assignQueue.length}枚：撮った市区町村を地図でタップしてください`;
+  $('#bannerText').textContent = `写真 ${assignQueue.length}枚：登録する${mode === 'pref' ? '都道府県' : '市区町村'}を地図でタップしてください`;
 }
-async function onMuniTap(code) {
-  if (assignQueue.length) {
-    const q = assignQueue; assignQueue = []; setBanner();
-    await addPhotos(q, code);
-  }
-  openMuni(code);
+async function onMuniTap(mcode) {
+  const code = mode === 'pref' ? mcode.slice(0, 2) : mcode;
+  if (assignQueue.length) { const q = assignQueue; assignQueue = []; setBanner(); await addPhotos(q, code); }
+  openSheet(code);
 }
 
 /* ---------- 検索 ---------- */
@@ -472,27 +517,27 @@ function search(term) {
   const r = $('#results'); term = term.trim();
   if (!term) { r.classList.remove('on'); r.innerHTML = ''; return; }
   const hits = [];
-  for (const [code, m] of meta) {
-    const full = m.pref + m.name;
-    if (m.name.includes(term) || full.includes(term)) hits.push([code, m, m.name.startsWith(term) ? 0 : 1]);
-  }
-  hits.sort((a, b) => a[2] - b[2] || a[0].localeCompare(b[0]));
-  r.innerHTML = hits.slice(0, 12).map(([code, m]) => { const v = visits.get(code);
-    return `<button data-code="${code}"><span>${esc(m.name)} <small>${esc(m.pref)}</small></span>${v ? `<i style="${swatchCSS(v)}"></i>` : ''}</button>`; }).join('')
+  PREFS.forEach((n, k) => { if (n.includes(term)) hits.push([pc(k + 1), n, '都道府県', n.startsWith(term) ? 0 : 1]); });
+  for (const [code, m] of meta) if (m.name.includes(term) || (m.pref + m.name).includes(term)) hits.push([code, m.name, m.pref, m.name.startsWith(term) ? 0 : 1]);
+  hits.sort((a, b) => a[3] - b[3] || a[0].length - b[0].length || a[0].localeCompare(b[0]));
+  r.innerHTML = hits.slice(0, 14).map(([code, n, s]) => { const v = recOf(code);
+    return `<button data-code="${code}"><span>${esc(n)} <small>${esc(s)}</small></span>${v ? `<i style="${swatchCSS(v)}"></i>` : ''}</button>`; }).join('')
     || `<button disabled><small>${loaded.size < 47 ? '地図を準備中です。少し待ってからもう一度お試しください' : '見つかりませんでした'}</small></button>`;
   r.classList.add('on');
 }
 
 /* ---------- ライトボックス ---------- */
 let lbId = null, lbURL = null;
+const coverTarget = p => mode === 'pref' ? p.code.slice(0, 2) : (isPref(p.code) ? null : p.code);
 function openPhoto(id) {
   const p = photos.find(x => x.id === id); if (!p) return; lbId = id;
   if (lbURL) URL.revokeObjectURL(lbURL); lbURL = URL.createObjectURL(p.blob);
   $('#lbImg').src = lbURL;
-  const v = visits.get(p.code);
-  $('#lbCap').textContent = `${(v || meta.get(p.code) || {}).name || ''}・${fmt(p.ts)}`;
-  $('#lbCover').textContent = v && v.coverId === id ? 'この写真で塗っています' : 'この写真で塗る';
-  $('#lbCover').disabled = !!(v && v.coverId === id);
+  $('#lbCap').textContent = `${label(p.code)}・${fmt(p.ts)}`;
+  const tgt = coverTarget(p), on = tgt && recOf(tgt) && recOf(tgt).coverId === id;
+  $('#lbCover').style.display = tgt ? '' : 'none';
+  $('#lbCover').textContent = on ? 'この写真で塗っています' : `この写真で${tgt ? label(tgt) : ''}を塗る`;
+  $('#lbCover').disabled = !!on;
   $('#lb').classList.add('on');
 }
 const closePhoto = () => { $('#lb').classList.remove('on'); $('#lbImg').removeAttribute('src'); if (lbURL) URL.revokeObjectURL(lbURL); lbURL = null; };
@@ -503,6 +548,7 @@ function showTab(t) {
   tab = t;
   document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === t));
   ['rec', 'photo', 'set'].forEach(k => $('#p-' + k).classList.toggle('on', k === t));
+  $('#seg').style.display = t === 'map' ? '' : 'none';
   if (t !== 'map') closeSheet();
   if (t === 'rec') renderRecords();
   if (t === 'photo') renderPhotos();
@@ -514,7 +560,7 @@ function showTab(t) {
 const toDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
 async function exportData() {
   toast('書き出し中…');
-  const out = {app: 'muni-nuri', version: 2, exported: Date.now(), visits: [...visits.values()], photos: []};
+  const out = {app: 'muni-nuri', version: 3, exported: Date.now(), visits: [...visits.values()], prefs: [...prefV.values()], photos: []};
   for (const p of photos) out.photos.push({oid: p.id, code: p.code, ts: p.ts, blob: await toDataURL(p.blob), thumb: await toDataURL(p.thumb || p.blob)});
   const url = URL.createObjectURL(new Blob([JSON.stringify(out)], {type: 'application/json'}));
   const a = document.createElement('a'); a.href = url; a.download = `nuritsubushi-${new Date().toISOString().slice(0, 10)}.json`;
@@ -528,30 +574,31 @@ async function importData(file) {
       const rec = {code: p.code, ts: p.ts, blob: await (await fetch(p.blob)).blob(), thumb: await (await fetch(p.thumb)).blob(), added: Date.now()};
       rec.id = await put('photos', rec); photos.push(rec); idMap.set(p.oid, rec.id);
     }
-    for (const v of j.visits || []) {
-      const nv = {...v, color: v.color || COLORS[0][1], coverId: v.coverId != null && idMap.has(v.coverId) ? idMap.get(v.coverId) : null};
-      const cur = visits.get(v.code);
+    for (const v of [...(j.visits || []), ...(j.prefs || [])]) {
+      const M = isPref(v.code) ? prefV : visits;
+      const nv = {...v, color: migrate(v.color || COLORS[0][1]), coverId: v.coverId != null && idMap.has(v.coverId) ? idMap.get(v.coverId) : null};
+      const cur = M.get(v.code);
       if (cur) { nv.dates = [...new Set([...cur.dates, ...v.dates])].sort((a, b) => a - b); nv.first = Math.min(cur.first, v.first); }
-      visits.set(v.code, nv); await put('visits', nv); refresh(v.code);
+      M.set(v.code, nv); await put(storeOf(v.code), nv); refresh(v.code);
     }
     renderCounts(); toast('読み込みました');
   } catch (e) { toast('バックアップファイルを読み込めませんでした'); }
 }
 
 /* ---------- イベント ---------- */
+document.querySelectorAll('#seg button').forEach(b => b.onclick = () => { if (b.dataset.mode !== mode) { setMode(b.dataset.mode); setBanner(); } });
 $('#q').addEventListener('input', e => search(e.target.value));
 $('#q').addEventListener('focus', e => { if (e.target.value) search(e.target.value); });
 $('#results').addEventListener('click', e => {
   const b = e.target.closest('[data-code]'); if (!b) return;
-  const code = b.dataset.code; $('#q').value = ''; search(''); $('#q').blur();
-  showTab('map'); flyTo(code); onMuniTap(code);
+  $('#q').value = ''; search(''); $('#q').blur(); go(b.dataset.code);
 });
-$('#inPick').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return; assignQueue = fs; setBanner(); showTab('map'); };
+$('#inPick').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return; assignQueue = fs; showTab('map'); setBanner(); };
 $('#inFor').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; if (fs.length && current) addPhotos(fs, current); };
 $('#inCover').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f || !current) return;
   const code = current;
-  try { if (!visits.has(code)) await paint(code); const rec = await savePhoto(f, code); await paint(code, {coverId: rec.id}); toast('写真で塗りました'); openMuni(code); }
+  try { if (!recOf(code)) await paint(code); const rec = await savePhoto(f, code); await paint(code, {coverId: rec.id}); toast('写真で塗りました'); openSheet(code); }
   catch (err) { toast('この画像は読み込めませんでした'); }
 };
 $('#inImp').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) importData(f); };
@@ -561,44 +608,46 @@ $('#sheet').addEventListener('click', async e => {
   const ph = e.target.closest('[data-ph]'); if (ph) return openPhoto(+ph.dataset.ph);
   if (!current) return;
   const code = current, col = e.target.closest('[data-color]');
-  if (col) { await paint(code, {color: col.dataset.color}); return openMuni(code); }
+  if (col) { await paint(code, {color: col.dataset.color}); return openSheet(code); }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'close') closeSheet();
   if (act === 'cover') $('#inCover').click();
   if (act === 'photo') $('#inFor').click();
   if (act === 'today') addDay(code);
-  if (act === 'unmark' && await ask('この市区町村の塗りと写真を削除します。よろしいですか？', '削除する')) { await unpaint(code); openMuni(code); }
+  if (act === 'unmark' && await ask(`${label(code)}の塗りを消します。${isPref(code) ? '都道府県に直接登録した写真' : '登録した写真'}も削除されます。よろしいですか？`, '消す')) { await unpaint(code); openSheet(code); }
 });
-$('#p-rec').addEventListener('click', e => { const c = e.target.closest('[data-code]'); if (!c) return; showTab('map'); flyTo(c.dataset.code); openMuni(c.dataset.code); });
+$('#p-rec').addEventListener('click', e => { const c = e.target.closest('[data-code]'); if (c) go(c.dataset.code); });
 $('#p-photo').addEventListener('click', e => { const ph = e.target.closest('[data-ph]'); if (ph) openPhoto(+ph.dataset.ph); });
 $('#lbClose').onclick = closePhoto;
-$('#lbCover').onclick = async () => { const p = photos.find(x => x.id === lbId); if (!p) return; await paint(p.code, {coverId: p.id}); closePhoto(); toast('写真で塗りました'); if (tab === 'photo') renderPhotos(); if (current) openMuni(current); };
-$('#lbMap').onclick = () => { const p = photos.find(x => x.id === lbId); closePhoto(); if (p) { showTab('map'); flyTo(p.code); openMuni(p.code); } };
-$('#lbDel').onclick = async () => { if (!await ask('この写真を削除しますか？', '削除する')) return; await removePhoto(lbId); closePhoto(); renderCounts(); if (tab === 'photo') renderPhotos(); if (current) openMuni(current); };
+$('#lbCover').onclick = async () => { const p = photos.find(x => x.id === lbId); if (!p) return; const tgt = coverTarget(p); if (!tgt) return; await paint(tgt, {coverId: p.id}); closePhoto(); toast('写真で塗りました'); if (tab === 'photo') renderPhotos(); if (current) openSheet(current); };
+$('#lbMap').onclick = () => { const p = photos.find(x => x.id === lbId); closePhoto(); if (p) go(mode === 'pref' ? p.code.slice(0, 2) : p.code); };
+$('#lbDel').onclick = async () => { if (!await ask('この写真を削除しますか？', '削除する')) return; await removePhoto(lbId); closePhoto(); renderCounts(); if (tab === 'photo') renderPhotos(); if (current) openSheet(current); };
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 map.on('click', () => { closeSheet(); search(''); });
 $('#btnExport').onclick = exportData;
 $('#btnImport').onclick = () => $('#inImp').click();
-$('#btnReload').onclick = () => { toast('再読み込み中…'); loadAll(); };
+$('#btnReload').onclick = () => { toast('再読み込み中…'); loadAll(); loadOutline(); };
 $('#btnWipe').onclick = async () => {
   if (!await ask('すべての塗りと写真を削除します。元に戻せません。', 'すべて消去')) return;
-  await clearStore('visits'); await clearStore('photos');
-  const codes = [...visits.keys()]; visits.clear(); photos = []; codes.forEach(refresh); renderCounts(); toast('消去しました');
+  await clearStore('visits'); await clearStore('photos'); await clearStore('prefs');
+  [...photoLayers.keys()].forEach(clearPhotoLayer);
+  visits.clear(); prefV.clear(); photos = []; restyleAll(); renderCounts(); toast('消去しました');
 };
 
 /* ---------- 起動 ---------- */
 (async () => {
   try {
-    for (const v of await getAll('visits')) visits.set(v.code, v);
+    for (const v of await getAll('visits')) { v.color = migrate(v.color); visits.set(v.code, v); }
+    for (const v of await getAll('prefs')) prefV.set(v.code, v);
     photos = await getAll('photos');
   } catch (e) { toast('この端末のブラウザでは保存が使えません'); }
+  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
   renderCounts();
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
-  const first = [...new Set([...visits.keys()].map(c => +c.slice(0, 2)))].filter(i => i >= 1 && i <= 47);
+  loadOutline();
+  const first = [...new Set([...visits.keys(), ...prefV.keys()].map(c => +c.slice(0, 2)))].filter(i => i >= 1 && i <= 47);
   await Promise.all(first.map(i => loadPref(i).catch(() => {})));
-  const ls = [...visits.keys()].flatMap(c => layers.get(c) || []);
-  if (ls.length) map.fitBounds(L.featureGroup(ls).getBounds(), {padding: [40, 40], maxZoom: 10});
   loadAll();
 })();
 }
