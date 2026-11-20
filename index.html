@@ -42,10 +42,10 @@ header h1{margin:0;line-height:0}header h1 img{height:40px;width:auto;display:bl
 .leaflet-control-attribution{font-size:10px;background:rgba(243,238,230,.85)!important;color:var(--sub)}
 .leaflet-control-attribution a{color:var(--sub)}
 .leaflet-bottom{bottom:calc(58px + var(--sb))}
-.mode{position:fixed;left:12px;top:calc(var(--hh,150px) + 10px);z-index:900;display:grid;grid-template-columns:1fr 1fr;width:200px;background:var(--ink);border:0;border-radius:999px;padding:4px;box-shadow:0 4px 14px rgba(43,39,34,.18)}
-.mode i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--card);border-radius:999px;transition:transform .25s ease}
-.mode.muni i{transform:translateX(100%)}
-.mode b{position:relative;text-align:center;font-weight:500;font-size:13px;line-height:36px;color:#bfb3a3;transition:color .25s}
+.mode{position:fixed;left:12px;top:calc(var(--hh,150px) + 10px);z-index:900;display:grid;grid-template-columns:1fr 1fr 1fr;width:252px;background:var(--ink);border:0;border-radius:999px;padding:4px;box-shadow:0 4px 14px rgba(43,39,34,.18)}
+.mode i{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);background:var(--card);border-radius:999px;transition:transform .25s ease}
+.mode.pref i{transform:translateX(100%)}.mode.muni i{transform:translateX(200%)}
+.mode b{cursor:pointer;text-align:center;font-weight:500;font-size:13px;line-height:36px;color:#bfb3a3;transition:color .25s}
 .mode b.on{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.mode i,.mode b{transition:none}}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:1100;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:var(--sb)}
@@ -247,7 +247,7 @@ body.replaying .mode,body.replaying .rbtn,body.replaying nav{display:none!import
   <div class="row" style="margin:12px 0 0"><button class="btn" id="adjReset" style="flex:1;justify-content:center">元に戻す</button><button class="btn pri" id="adjSave" style="flex:1;justify-content:center">保存</button></div>
 </div></div>
 <dialog id="bpop"><p class="pk" id="bpopK"></p><p class="ttl">New stamp</p><div id="bpopS"></div><h4 id="bpopN"></h4><p class="c" id="bpopC"></p><div class="row"><button class="btn" id="bpopSkip">残りをスキップ</button><button class="btn pri" id="bpopNext">次へ</button></div></dialog>
-<button class="mode" id="modeSw" role="switch" aria-checked="false" aria-label="都道府県と市区町村の切り替え"><i></i><b data-m="pref">都道府県</b><b data-m="muni">市区町村</b></button>
+<div class="mode" id="modeSw" role="radiogroup" aria-label="地図の切り替え"><i></i><b data-m="world" role="radio" tabindex="0">世界</b><b data-m="pref" role="radio" tabindex="0">都道府県</b><b data-m="muni" role="radio" tabindex="0">市区町村</b></div>
 <div id="banner"><span id="bannerText"></span><button id="bannerCancel">やめる</button></div>
 
 <section class="panel" id="p-rec"></section>
@@ -317,6 +317,8 @@ function geomArea(g) {
 }
 const areas = new Map();
 const isPref = c => c.length === 2;
+const isWorld = c => c[0] === 'W';
+const kindOf = c => isWorld(c) ? 'world' : isPref(c) ? 'pref' : 'muni';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = t => new Date(t).toLocaleDateString('ja-JP', {year:'numeric', month:'short', day:'numeric'});
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -325,7 +327,7 @@ const ICON_PHOTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 /* ---------- 保存（IndexedDB） ---------- */
 let dbp;
 const db = () => dbp || (dbp = new Promise((res, rej) => {
-  const r = indexedDB.open('muni-nuri', 4);
+  const r = indexedDB.open('muni-nuri', 5);
   r.onupgradeneeded = () => {
     const d = r.result, has = n => d.objectStoreNames.contains(n);
     if (!has('visits')) d.createObjectStore('visits', {keyPath: 'code'});
@@ -333,6 +335,7 @@ const db = () => dbp || (dbp = new Promise((res, rej) => {
     if (!has('prefs')) d.createObjectStore('prefs', {keyPath: 'code'});
     if (!has('badges')) d.createObjectStore('badges', {keyPath: 'id'});
     if (!has('memos')) d.createObjectStore('memos', {keyPath: 'code'});
+    if (!has('world')) d.createObjectStore('world', {keyPath: 'code'});
   };
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 }));
@@ -360,9 +363,11 @@ const allLayers = [];
 const loaded = new Set();
 const urls = new Map();
 const thumbURL = p => { const k = 't' + p.id; if (!urls.has(k)) urls.set(k, URL.createObjectURL(p.thumb || p.blob)); return urls.get(k); };
-const recOf = c => (isPref(c) ? prefV : visits).get(c);
-const storeOf = c => isPref(c) ? 'prefs' : 'visits';
-const label = c => isPref(c) ? PREFS[+c - 1] : ((visits.get(c) || meta.get(c) || {}).name || c);
+const worldV = new Map();     // 国 code('W'+ADM0_A3) -> {code,name,cont,color,coverId,dates[],first}
+const mapOf = c => isWorld(c) ? worldV : isPref(c) ? prefV : visits;
+const recOf = c => mapOf(c).get(c);
+const storeOf = c => isWorld(c) ? 'world' : isPref(c) ? 'prefs' : 'visits';
+const label = c => isWorld(c) ? ((wMeta.get(c) || worldV.get(c) || {}).name || c) : isPref(c) ? PREFS[+c - 1] : ((visits.get(c) || meta.get(c) || {}).name || c);
 let current = null, assignQueue = [];
 let mode = 'muni';
 let lastColor = COLORS[0][1];
@@ -392,6 +397,62 @@ function style(code) {
 }
 const restyleAll = () => allLayers.forEach(l => l.setStyle(style(l._code)));
 
+/* ---------- 世界地図 ---------- */
+const CONT_JA = {'Asia': 'アジア', 'Europe': 'ヨーロッパ', 'Africa': 'アフリカ', 'North America': '北アメリカ', 'South America': '南アメリカ', 'Oceania': 'オセアニア', 'Antarctica': '南極', 'Seven seas (open ocean)': '海洋'};
+const wMeta = new Map(), wLayers = new Map();
+let worldGJ = null, wGroup = null, wLoading = null;
+const jpGroups = [];
+let jpView = null, wView = null;
+function wStyle(code) {
+  const v = worldV.get(code), cov = coverOf(v);
+  return {renderer, stroke: true, opacity: 1, fillOpacity: 1, color: v && !cov ? '#fbf8f3' : EDGE, weight: v ? .8 : .6, fillColor: v && !cov ? v.color : LAND};
+}
+function loadWorld() {
+  if (wLoading) return wLoading;
+  wLoading = (async () => {
+    const f = 'geojson/ne_50m_admin_0_countries.geojson', g = 'geojson/ne_110m_admin_0_countries.geojson';
+    worldGJ = await fetchJSON([`https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/${f}`, `https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/${f}`, `https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/${g}`]);
+    wGroup = L.geoJSON(worldGJ, {renderer,
+      style: f => wStyle(wCode(f.properties)),
+      onEachFeature: (f, l) => {
+        const p = f.properties, code = wCode(p); l._code = code;
+        if (!wMeta.has(code)) wMeta.set(code, {name: p.NAME_JA || p.name_ja || p.NAME || p.ADMIN, cont: p.CONTINENT, contJa: CONT_JA[p.CONTINENT] || p.CONTINENT});
+        if (!wLayers.has(code)) wLayers.set(code, []);
+        wLayers.get(code).push(l);
+        l.on('click', e => { L.DomEvent.stop(e); onMuniTap(code); });
+      }});
+    badgeShapes.clear();
+  })();
+  wLoading.catch(() => { wLoading = null; toast('世界地図を読み込めませんでした。電波の良い所でもう一度お試しください'); });
+  return wLoading;
+}
+const wCode = p => 'W' + ((p.ADM0_A3 && p.ADM0_A3 !== '-99') ? p.ADM0_A3 : (p.ISO_A3 && p.ISO_A3 !== '-99' ? p.ISO_A3 : String(p.NAME || p.ADMIN).replace(/\W/g, '').slice(0, 8)));
+async function showWorldLayers(on) {
+  if (on) {
+    jpGroups.forEach(g => map.removeLayer(g)); if (outlineLayer) map.removeLayer(outlineLayer);
+    jpView = [map.getCenter(), map.getZoom()];
+    $('#loadinfo').textContent = '世界地図を準備中…';
+    try { await loadWorld(); } catch (e) { return; }
+    if (mode !== 'world') return;
+    $('#loadinfo').textContent = worldV.size ? '' : '行った国をタップして塗りましょう';
+    if (!map.hasLayer(wGroup)) wGroup.addTo(map);
+    wGroup.eachLayer(l => l.setStyle(wStyle(l._code)));
+    if (wView) map.setView(wView[0], wView[1], {animate: false}); else map.setView([30, 135], 2, {animate: false});
+    worldV.forEach((v, c) => drawPhotoLayer(c));
+  } else {
+    if (wGroup && map.hasLayer(wGroup)) { wView = [map.getCenter(), map.getZoom()]; map.removeLayer(wGroup); }
+    jpGroups.forEach(g => { if (!map.hasLayer(g)) g.addTo(map); }); if (outlineLayer && !map.hasLayer(outlineLayer)) outlineLayer.addTo(map);
+    if (jpView) { map.setView(jpView[0], jpView[1], {animate: false}); jpView = null; }
+    loadInfo();
+  }
+}
+/* 日本地図で1か所でも塗ったら、世界地図の日本を自動で塗る */
+async function syncJapan() {
+  const r = worldV.get('WJPN');
+  if (visits.size && !r) { const first = Math.min(...[...visits.values()].map(v => v.first)); const v = {code: 'WJPN', name: '日本', cont: 'Asia', auto: true, color: COLORS[0][1], coverId: null, dates: [first], first}; worldV.set('WJPN', v); try { await put('world', v); } catch (e) {} refresh('WJPN'); }
+  else if (!visits.size && r && r.auto) { worldV.delete('WJPN'); try { await del('world', 'WJPN'); } catch (e) {} refresh('WJPN'); }
+}
+
 /* 都道府県の境界線（見た目用） */
 let outlineLayer = null, outlineGJ = null;
 async function loadOutline() {
@@ -399,7 +460,8 @@ async function loadOutline() {
   try {
     const gj = await fetchJSON(['https://cdn.jsdelivr.net/gh/dataofjapan/land@master/japan.geojson', 'https://raw.githubusercontent.com/dataofjapan/land/master/japan.geojson']);
     outlineGJ = gj; badgeShapes.clear();
-    outlineLayer = L.geoJSON(gj, {renderer: outlineR, interactive: false, style: {renderer: outlineR, color: OUTLINE, weight: 1.1, opacity: .8, fill: false}}).addTo(map);
+    outlineLayer = L.geoJSON(gj, {renderer: outlineR, interactive: false, style: {renderer: outlineR, color: OUTLINE, weight: 1.1, opacity: .8, fill: false}});
+    if (mode !== 'world') outlineLayer.addTo(map);
   } catch (e) {}
 }
 
@@ -426,8 +488,8 @@ function clearPhotoLayer(code) {
 const prefLayers = p => allLayers.filter(l => l._code.slice(0, 2) === p);
 function drawPhotoLayer(code) {
   clearPhotoLayer(code);
-  if ((mode === 'pref') !== isPref(code)) return;
-  const cov = coverOf(recOf(code)), ls = isPref(code) ? prefLayers(code) : layers.get(code);
+  if (mode !== kindOf(code)) return;
+  const cov = coverOf(recOf(code)), ls = isWorld(code) ? wLayers.get(code) : isPref(code) ? prefLayers(code) : layers.get(code);
   if (!cov || !ls || !ls.length) return;
   const url = URL.createObjectURL(cov.blob), group = L.featureGroup().addTo(map), subs = [];
   for (const l of ls) {
@@ -448,18 +510,21 @@ function drawPhotoLayer(code) {
 }
 map.on('zoomend viewreset', () => requestAnimationFrame(() => photoLayers.forEach(placePattern)));
 function refresh(code) {
+  if (isWorld(code)) { (wLayers.get(code) || []).forEach(l => l.setStyle(wStyle(code))); return drawPhotoLayer(code); }
   (isPref(code) ? prefLayers(code) : (layers.get(code) || [])).forEach(l => l.setStyle(style(l._code)));
   drawPhotoLayer(code);
 }
 function showModeSw() {
-  const sw = $('#modeSw'); sw.classList.toggle('muni', mode === 'muni'); sw.setAttribute('aria-checked', mode === 'muni');
-  sw.querySelectorAll('b').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+  const sw = $('#modeSw'); sw.classList.toggle('muni', mode === 'muni'); sw.classList.toggle('pref', mode === 'pref');
+  sw.querySelectorAll('b').forEach(b => { b.classList.toggle('on', b.dataset.m === mode); b.setAttribute('aria-checked', b.dataset.m === mode); });
 }
 function setMode(m) {
   mode = m; try { localStorage.setItem('nuri-mode', m); } catch (e) {}
   showModeSw();
   closeSheet();
   [...photoLayers.keys()].forEach(clearPhotoLayer);
+  if (m === 'world') { showWorldLayers(true); renderCounts(); return; }
+  if (!wGroup || !map.hasLayer(wGroup)) { if (jpGroups.some(g => !map.hasLayer(g))) showWorldLayers(false); } else showWorldLayers(false);
   restyleAll();
   (m === 'pref' ? prefV : visits).forEach((v, c) => drawPhotoLayer(c));
   renderCounts();
@@ -484,7 +549,7 @@ function loadPref(i) {
   if (pending.has(i)) return pending.get(i);
   const p = (async () => {
     const gj = await fetchJSON(sources(pc(i)));
-    L.geoJSON(gj, {
+    const gjl = L.geoJSON(gj, {
       renderer,
       filter: f => f.properties && f.properties.N03_007,
       style: f => style(unitOf(String(f.properties.N03_007).padStart(5, '0'))),
@@ -498,7 +563,8 @@ function loadPref(i) {
         layers.get(code).push(l);
         l.on('click', e => { L.DomEvent.stop(e); onMuniTap(code); });
       }
-    }).addTo(map);
+    });
+    jpGroups.push(gjl); if (mode !== 'world') gjl.addTo(map);
     loaded.add(i);
     for (const v of visits.values()) if (+v.code.slice(0, 2) === i) refresh(v.code);
     if (prefV.has(pc(i))) refresh(pc(i));
@@ -526,14 +592,15 @@ function loadInfo(fail) {
 
 /* ---------- 記録 ---------- */
 async function paint(code, opts = {}) {
-  const M = isPref(code) ? prefV : visits;
+  const M = mapOf(code);
   let v = M.get(code); const isNew = !v; const t = Date.now();
   if (!v) v = {code, dates: [t], first: t, color: lastColor, coverId: null};
   if (opts.color) { v.color = opts.color; v.coverId = null; lastColor = opts.color; try { localStorage.setItem('nuri-color', lastColor); } catch (e) {} }
   if (opts.coverId !== undefined) { v.coverId = opts.coverId; v.adj = null; }
   if (opts.adj !== undefined) v.adj = opts.adj;
   if (!v.color) v.color = lastColor;
-  if (isPref(code)) v.name = PREFS[+code - 1];
+  if (isWorld(code)) { const w = wMeta.get(code) || {}; v.name = w.name || v.name || code; v.cont = w.cont || v.cont; if (code === 'WJPN') v.auto = false; }
+  else if (isPref(code)) v.name = PREFS[+code - 1];
   else { const m = meta.get(code); v.name = m ? m.name : (v.name || code); v.pref = m ? m.pref : (v.pref || PREFS[+code.slice(0, 2) - 1] || ''); }
   M.set(code, v);
   await put(storeOf(code), v);
@@ -548,7 +615,7 @@ async function addDay(code) {
   v.dates.push(Date.now()); await put(storeOf(code), v); toast('今日の日付を追加しました');
 }
 async function unpaint(code) {
-  (isPref(code) ? prefV : visits).delete(code); await del(storeOf(code), code);
+  mapOf(code).delete(code); await del(storeOf(code), code);
   for (const p of photos.filter(p => p.code === code)) await removePhoto(p.id);
   refresh(code); renderCounts();
 }
@@ -584,7 +651,7 @@ async function removePhoto(id) {
   await del('photos', id);
   photos = photos.filter(x => x.id !== id);
   const k = 't' + id; if (urls.has(k)) { URL.revokeObjectURL(urls.get(k)); urls.delete(k); }
-  for (const v of [...visits.values(), ...prefV.values()]) if (v.coverId === id) { v.coverId = null; await put(storeOf(v.code), v); refresh(v.code); }
+  for (const v of [...visits.values(), ...prefV.values(), ...worldV.values()]) if (v.coverId === id) { v.coverId = null; await put(storeOf(v.code), v); refresh(v.code); }
 }
 /* 写真のEXIFから撮影日だけを読む */
 async function exifDate(file) {
@@ -624,7 +691,8 @@ function ask(text, okLabel = 'OK') {
 function prefTotals() { const t = Array(48).fill(0); for (const c of meta.keys()) t[+c.slice(0, 2)]++; return t; }
 function renderCounts() {
   scheduleBadges();
-  $('#count').innerHTML = mode === 'pref' ? `<b>${prefV.size}</b>/47 都道府県` : `<b>${visits.size}</b>市区町村`;
+  syncJapan();
+  $('#count').innerHTML = mode === 'world' ? `<b>${worldV.size}</b>国・地域` : mode === 'pref' ? `<b>${prefV.size}</b>/47 都道府県` : `<b>${visits.size}</b>市区町村`;
   if (loaded.size === 47) loadInfo();
   if (tab === 'rec') renderRecords();
 }
@@ -677,6 +745,8 @@ function renderRecords() {
   <div class="hero"><svg viewBox="0 0 120 120" role="img" aria-label="制覇率">${ring(52, 10, mp, '#8c5a45')}${ring(36, 8, pp, '#3f5a6e')}</svg>
     <div class="st"><div class="k"><i style="background:#8c5a45"></i><b>${ready ? pctTxt(mp) : '–'}<small>%</small></b><span>市区町村 ${visits.size}${ready ? ' / ' + N.toLocaleString() : ''}</span></div>
     <div class="k"><i style="background:#3f5a6e"></i><b>${pctTxt(pp)}<small>%</small></b><span>都道府県 ${prefV.size} / 47</span></div></div></div>
+  ${(() => { const conts = new Set([...worldV.values()].map(v => v.cont).filter(c => CONT6.includes(c)));
+    return `<div class="area" style="border-bottom:0;padding-bottom:4px">訪れた国・地域　<b>${worldV.size}</b>${wMeta.size ? ` / ${wMeta.size}` : ''}　大陸　<b>${conts.size}</b> / 6</div><div class="chips" style="padding:0 0 10px">${CONT6.map(c => `<span class="chip${conts.has(c) ? '' : ' no'}" style="min-height:30px">${CONT_JA[c]}</span>`).join('')}</div>`; })()}
   <div class="area">塗った市区町村の面積　約<b>${Math.round(area).toLocaleString()}</b>km²${ready && all ? `（全国の${pctTxt(area / all)}%）` : ''}</div>
   ${ready ? '' : '<p class="empty">地図データを準備中です。少し待つと全体の数字が表示されます。</p>'}
 
@@ -709,7 +779,7 @@ function renderPhotos() {
 function openSheet(code) {
   current = code;
   const P = isPref(code), v = recOf(code), cov = coverOf(v);
-  const m = P ? {name: PREFS[+code - 1], pref: '都道府県'} : (meta.get(code) || {name: v ? v.name : code, pref: v ? v.pref : ''});
+  const m = isWorld(code) ? {name: label(code), pref: (wMeta.get(code) || {}).contJa || CONT_JA[(v || {}).cont] || '世界'} : P ? {name: PREFS[+code - 1], pref: '都道府県'} : (meta.get(code) || {name: v ? v.name : code, pref: v ? v.pref : ''});
   const ps = photos.filter(p => P ? p.code.slice(0, 2) === code : p.code === code).sort((a, b) => b.ts - a.ts);
   const sub = P ? (() => { const t = prefTotals()[+code], n = [...visits.keys()].filter(c => c.slice(0, 2) === code).length; return `市区町村 ${n}${t ? '/' + t : ''} を塗り済み`; })() : '';
   $('#sheet').innerHTML = `<div class="grip"></div>
@@ -742,23 +812,24 @@ $('#sheet').addEventListener('input', e => {
   memoPending = [current, e.target.value]; clearTimeout(memoTimer); memoTimer = setTimeout(flushMemo, 500);
 });
 function flyTo(code) {
-  const ls = isPref(code) ? prefLayers(code) : layers.get(code);
-  if (ls && ls.length) map.flyToBounds(L.featureGroup(ls).getBounds(), {paddingTopLeft: [30, 180], paddingBottomRight: [30, Math.round(innerHeight * .45)], maxZoom: isPref(code) ? 9 : 12});
+  const ls = isWorld(code) ? wLayers.get(code) : isPref(code) ? prefLayers(code) : layers.get(code);
+  if (ls && ls.length) map.flyToBounds(L.featureGroup(ls).getBounds(), {paddingTopLeft: [30, 180], paddingBottomRight: [30, Math.round(innerHeight * .45)], maxZoom: isWorld(code) ? 5 : isPref(code) ? 9 : 12});
 }
 function go(code) {
-  const want = isPref(code) ? 'pref' : 'muni';
+  const want = kindOf(code);
   if (mode !== want) setMode(want);
-  showTab('map'); flyTo(code); openSheet(code);
+  showTab('map');
+  if (want === 'world') loadWorld().then(() => { flyTo(code); openSheet(code); }).catch(() => {}); else { flyTo(code); openSheet(code); }
 }
 
 /* 写真タブから追加した写真を地図タップで割り当て */
 function setBanner() {
   $('#banner').classList.toggle('on', assignQueue.length > 0);
-  $('#bannerText').textContent = `写真 ${assignQueue.length}枚：登録する${mode === 'pref' ? '都道府県' : '市区町村'}を地図でタップしてください`;
+  $('#bannerText').textContent = `写真 ${assignQueue.length}枚：登録する${mode === 'world' ? '国' : mode === 'pref' ? '都道府県' : '市区町村'}を地図でタップしてください`;
 }
 async function onMuniTap(mcode) {
   if (document.body.classList.contains('replaying')) return;
-  const code = mode === 'pref' ? mcode.slice(0, 2) : mcode;
+  const code = isWorld(mcode) ? mcode : mode === 'pref' ? mcode.slice(0, 2) : mcode;
   if (assignQueue.length) { const q = assignQueue; assignQueue = []; setBanner(); await addPhotos(q, code); }
   openSheet(code);
 }
@@ -767,6 +838,7 @@ async function onMuniTap(mcode) {
 function localHits(term) {
   const hits = [];
   PREFS.forEach((n, k) => { if (n.includes(term)) hits.push([pc(k + 1), n, '都道府県', n.startsWith(term) ? 0 : 1]); });
+  for (const [code, w] of wMeta) if (w.name && w.name.includes(term)) hits.push([code, w.name, w.contJa, w.name.startsWith(term) ? 0 : 1]);
   for (const [code, m] of meta) {
     if (m.name.includes(term) || (m.pref + m.name).includes(term)) hits.push([code, m.name, m.pref, m.name.startsWith(term) ? 0 : 1]);
     else { const w = (m.wards || []).find(w => w.includes(term)); if (w) hits.push([code, m.name, `${m.pref}・${w}`, w.startsWith(term) ? 0 : 1]); }
@@ -831,7 +903,7 @@ async function geoSearch(term) {
 
 /* ---------- ライトボックス ---------- */
 let lbId = null, lbURL = null;
-const coverTarget = p => mode === 'pref' ? p.code.slice(0, 2) : (isPref(p.code) ? null : p.code);
+const coverTarget = p => mode === 'world' ? (isWorld(p.code) ? p.code : null) : isWorld(p.code) ? null : mode === 'pref' ? p.code.slice(0, 2) : (isPref(p.code) ? null : p.code);
 function openPhoto(id) {
   const p = photos.find(x => x.id === id); if (!p) return; lbId = id;
   if (lbURL) URL.revokeObjectURL(lbURL); lbURL = URL.createObjectURL(p.blob);
@@ -868,7 +940,7 @@ function showTab(t) {
 const toDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
 async function exportData() {
   toast('書き出し中…');
-  const out = {app: 'muni-nuri', version: 3, exported: Date.now(), visits: [...visits.values()], prefs: [...prefV.values()], badges: [...earned].map(([id, ts]) => ({id, ts})), memos: [...memos.values()], photos: []};
+  const out = {app: 'muni-nuri', version: 3, exported: Date.now(), visits: [...visits.values()], prefs: [...prefV.values()], world: [...worldV.values()], badges: [...earned].map(([id, ts]) => ({id, ts})), memos: [...memos.values()], photos: []};
   for (const p of photos) out.photos.push({oid: p.id, code: p.code, ts: p.ts, blob: await toDataURL(p.blob), thumb: await toDataURL(p.thumb || p.blob)});
   const url = URL.createObjectURL(new Blob([JSON.stringify(out)], {type: 'application/json'}));
   const a = document.createElement('a'); a.href = url; a.download = `nuritsubushi-${new Date().toISOString().slice(0, 10)}.json`;
@@ -882,8 +954,8 @@ async function importData(file) {
       const rec = {code: p.code, ts: p.ts, blob: await (await fetch(p.blob)).blob(), thumb: await (await fetch(p.thumb)).blob(), added: Date.now()};
       rec.id = await put('photos', rec); photos.push(rec); idMap.set(p.oid, rec.id);
     }
-    for (const v of [...(j.visits || []), ...(j.prefs || [])]) {
-      const M = isPref(v.code) ? prefV : visits;
+    for (const v of [...(j.visits || []), ...(j.prefs || []), ...(j.world || [])]) {
+      const M = mapOf(v.code);
       const nv = {...v, color: migrate(v.color || COLORS[0][1]), coverId: v.coverId != null && idMap.has(v.coverId) ? idMap.get(v.coverId) : null};
       const cur = M.get(v.code);
       if (cur) { nv.dates = [...new Set([...cur.dates, ...v.dates])].sort((a, b) => a - b); nv.first = Math.min(cur.first, v.first); }
@@ -897,7 +969,8 @@ async function importData(file) {
 }
 
 /* ---------- イベント ---------- */
-$('#modeSw').onclick = () => { setMode(mode === 'pref' ? 'muni' : 'pref'); setBanner(); };
+$('#modeSw').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b && b.dataset.m !== mode) { setMode(b.dataset.m); setBanner(); } });
+$('#modeSw').addEventListener('keydown', e => { const b = e.target.closest('[data-m]'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); b.click(); } });
 $('#q').addEventListener('input', e => search(e.target.value));
 $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); geoSearch(e.target.value); } });
 $('#q').addEventListener('focus', e => { if (e.target.value) search(e.target.value); });
@@ -950,15 +1023,15 @@ $('#btnImport').onclick = () => $('#inImp').click();
 $('#btnReload').onclick = () => { toast('再読み込み中…'); loadAll(); loadOutline(); };
 $('#btnWipe').onclick = async () => {
   if (!await ask('すべての塗りと写真を削除します。元に戻せません。', 'すべて消去')) return;
-  await clearStore('visits'); await clearStore('photos'); await clearStore('prefs'); await clearStore('badges'); earned.clear(); await clearStore('memos'); memos.clear();
+  await clearStore('visits'); await clearStore('photos'); await clearStore('prefs'); await clearStore('badges'); earned.clear(); await clearStore('memos'); memos.clear(); await clearStore('world'); worldV.clear();
   [...photoLayers.keys()].forEach(clearPhotoLayer);
   visits.clear(); prefV.clear(); photos = []; restyleAll(); renderCounts(); toast('消去しました');
 };
 
 
 /* ---------- Badges（スタンプ帳） ---------- */
-const INK = {ms: '#8c5a45', pf: '#3f5a6e', ph: '#7a5c6e', ar: '#a8834f', rg: '#5f6f52', ed: '#6f7b86', fm: '#3f3a33', no: '#8a6a2e', nm: '#4b6f78', co: '#b08078', pr: '#8c5a45'};
-const PAGES = [['ms', 'Milestones', '道のり'], ['ph', 'Photos', '写真'], ['ar', 'Area', '面積'], ['rg', 'Regions', '地方制覇'], ['ed', 'Edges', '端っこ'], ['fm', 'Famous places', '名所めぐり'], ['no', 'No.1', '日本一'], ['nm', 'Names', '名前めぐり'], ['co', 'Collections', 'コレクション'], ['pr', 'Prefectures', '都道府県制覇']];
+const INK = {wo: '#3d6e64', ms: '#8c5a45', pf: '#3f5a6e', ph: '#7a5c6e', ar: '#a8834f', rg: '#5f6f52', ed: '#6f7b86', fm: '#3f3a33', no: '#8a6a2e', nm: '#4b6f78', co: '#b08078', pr: '#8c5a45'};
+const PAGES = [['ms', 'Milestones', '道のり'], ['ph', 'Photos', '写真'], ['ar', 'Area', '面積'], ['rg', 'Regions', '地方制覇'], ['ed', 'Edges', '端っこ'], ['fm', 'Famous places', '名所めぐり'], ['no', 'No.1', '日本一'], ['nm', 'Names', '名前めぐり'], ['co', 'Collections', 'コレクション'], ['pr', 'Prefectures', '都道府県制覇'], ['wo', 'World', '世界']];
 const MAINLAND = [1, 13, 32, 42, 46, 47]; // 離島を除いて本土だけを描く
 const B = [];
 const at = (pi, n) => { const c = findCode(pi, n); return !!c && visits.has(c); };
@@ -1016,6 +1089,15 @@ B.push({id: 'ctop', page: 'co', name: '魅力度TOP20', art: 'top', v: '20', con
 B.push({id: 'umi', page: 'co', name: '海なし県制覇', art: 'mount', lbl: '海なし県', cond: '栃木・群馬・埼玉・山梨・長野・岐阜・滋賀・奈良をすべて塗る', hint: '海のない…', test: () => [9, 10, 11, 19, 20, 21, 25, 29].every(i => prefV.has(pc(i)))});
 B.push({id: 'big3', page: 'co', name: '三大都市', tx: '三大都市', cond: '東京23区のどこか・大阪市・名古屋市を塗る', hint: '日本の大都市を…', test: () => visits.has('27100') && visits.has('23100') && [...visits.keys()].some(c => c >= '13101' && c <= '13123')});
 B.push({id: 't23', page: 'co', name: '東京23区コンプリート', tx: '23区', cond: '東京23区をすべて塗る', hint: '東京の区を…', test: x => x.ready && Array.from({length: 23}, (_, i) => String(13101 + i).padStart(5, '0')).every(c => visits.has(c))});
+/* World */
+const CONT6 = ['Asia', 'Europe', 'Africa', 'North America', 'South America', 'Oceania'];
+const hasW = a3 => worldV.has('W' + a3);
+B.push({id: 'w1', page: 'wo', name: 'はじめての海外', art: 'plane', lbl: 'はじめての海外', cond: '日本以外の国・地域を1つ塗る', hint: '海の向こうへ…', test: () => [...worldV.keys()].some(c => c !== 'WJPN')});
+[5, 10, 20, 30, 50, 100].forEach(n => B.push({id: 'wn' + n, page: 'wo', name: `${n}か国`, art: 'globe', v: String(n), lbl: 'か国', show: true, cond: `日本を含めて${n}の国・地域を塗る`, test: () => worldV.size >= n}));
+CONT6.forEach((c, k) => B.push({id: 'wc' + k, page: 'wo', name: CONT_JA[c], cont: c, lbl: CONT_JA[c], cond: `${CONT_JA[c]}の国・地域を1つ塗る`, hint: 'どこかの大陸へ…', test: () => [...worldV.values()].some(v => v.cont === c)}));
+B.push({id: 'wall', page: 'wo', name: '全大陸', cont: 'ALL', lbl: '全大陸', cond: '6大陸すべてで国・地域を塗る', hint: 'すべての大陸へ…', test: () => CONT6.every(c => [...worldV.values()].some(v => v.cont === c))});
+B.push({id: 'wg7', page: 'wo', name: 'G7', tx: 'G7', cond: '日本・アメリカ・イギリス・フランス・ドイツ・イタリア・カナダをすべて塗る', hint: '主要な7か国を…', test: () => ['JPN', 'USA', 'GBR', 'FRA', 'DEU', 'ITA', 'CAN'].every(hasW)});
+B.push({id: 'wnb', page: 'wo', name: 'おとなりさん', art: 'neighbors', lbl: 'おとなりさん', cond: '韓国・中国・台湾・ロシアをすべて塗る', hint: '日本のおとなりを…', test: () => ['KOR', 'CHN', 'TWN', 'RUS'].every(hasW)});
 /* Prefectures */
 PREFS.forEach((n, k) => B.push({id: 'pp' + pc(k + 1), page: 'pr', pref: k + 1, name: `${n}制覇`, lbl: n, cond: `${n}の市区町村をすべて塗る`, hint: 'どこかの都道府県の市区町村をすべて…', test: x => loaded.has(k + 1) && x.tot[k + 1] > 0 && x.by[k + 1] >= x.tot[k + 1]}));
 
@@ -1077,7 +1159,39 @@ const pine = (c, x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})"><p
 const tenshu = (c, x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-12 12 L-10 6 L10 6 L12 12Z" ${sl(c, 1.3)}/><path d="M-9 6 L-9 3 L9 3 L9 6" ${sl(c, 1.1)}/><path d="M-11 3 L11 3 L8 0 L-8 0Z" ${sl(c, 1.2)}/><path d="M-6 0 L-6 -3 L6 -3 L6 0" ${sl(c, 1.1)}/><path d="M-8 -3 L8 -3 L5 -6 L-5 -6Z" ${sl(c, 1.2)}/><path d="M-6 -6 L6 -6 L0 -9.5Z" fill="${c}"/></g>`;
 const burst = (c, x, y, R, n, w) => `<g transform="translate(${x} ${y})">${Array.from({length: n}, (_, i) => { const a = i * 2 * Math.PI / n; return `<path d="M${(R * .25 * Math.cos(a)).toFixed(1)} ${(R * .25 * Math.sin(a)).toFixed(1)} L${(R * Math.cos(a)).toFixed(1)} ${(R * Math.sin(a)).toFixed(1)}" ${sl(c, w)}/><circle cx="${((R + 1.8) * Math.cos(a)).toFixed(1)}" cy="${((R + 1.8) * Math.sin(a)).toFixed(1)}" r=".8" fill="${c}"/>`; }).join('')}</g>`;
 const steam = (c, x, y, h) => `<path d="M${x} ${y} q-2.2 -${h / 4} 0 -${h / 2} q2.2 -${h / 4} 0 -${h / 2}" ${sl(c, 1.3)}/>`;
+const merc = ([x, y]) => [x, Math.log(Math.tan(Math.PI / 4 + Math.max(-80, Math.min(80, y)) * Math.PI / 360)) * 180 / Math.PI];
+function fitPathP(polys, [bx, by, bw, bh], proj) {
+  const Q = polys.map(r => r.map(proj)); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  Q.forEach(r => r.forEach(([x, y]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }));
+  const sc = Math.min(bw / (x1 - x0), bh / (y1 - y0)), ox = bx + (bw - (x1 - x0) * sc) / 2, oy = by + (bh - (y1 - y0) * sc) / 2;
+  return Q.map(r => { const st = Math.max(1, Math.floor(r.length / 80)); let s = ''; for (let j = 0; j < r.length; j += st) { const [x, y] = r[j]; s += (s ? 'L' : 'M') + (ox + (x - x0) * sc).toFixed(1) + ' ' + (oy + (y1 - y) * sc).toFixed(1); } return s + 'Z'; }).join('');
+}
+const ringsOfG = g => { const r = []; if (!g) return r; if (g.type === 'Polygon') r.push(g.coordinates[0]); else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => r.push(p[0])); return r; };
+function contShape(c) {
+  const key = 'c' + c; if (badgeShapes.has(key)) return badgeShapes.get(key);
+  if (!worldGJ) { loadWorldForBadges(); return null; }
+  let P = [];
+  worldGJ.features.forEach(f => { const k = f.properties.CONTINENT; if (c === 'ALL' ? CONT6.includes(k) : k === c) P.push(...ringsOfG(f.geometry)); });
+  if (c === 'Oceania') P = P.map(r => r.map(([x, y]) => [x < 0 ? x + 360 : x, y]));
+  if (c === 'ALL') P = P.filter(r => r.every(([x]) => x > -170));
+  const A = P.map(r => ringArea(r)), M = Math.max(...A); P = P.filter((r, i) => A[i] >= M * (c === 'ALL' ? .004 : .01));
+  const d = P.length ? fitPathP(P, c === 'ALL' ? [14, 17, 36, 26] : [16, 15, 32, 30], merc) : null;
+  badgeShapes.set(key, d); return d;
+}
+function neighborsArt(c) {
+  if (!worldGJ) { loadWorldForBadges(); return ft(c, 32, 36, 'おとなり', 9.5, 'Noto Serif JP', 900); }
+  const m24 = merc([0, 24])[1], m48 = merc([0, 48])[1];
+  const proj = ([x, y]) => { const [a, b] = merc([x, y]); return [(a - 118) / 32 * 30 + 17, 45 - (b - m24) / (m48 - m24) * 30]; };
+  const path = f => ringsOfG(f.geometry).map(r => { let s = ''; const st = Math.max(1, Math.floor(r.length / 120)); for (let j = 0; j < r.length; j += st) { const [x, y] = proj(r[j]); s += (s ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); } return s + 'Z'; }).join('');
+  const fs = worldGJ.features.filter(f => ['JPN', 'KOR', 'PRK', 'CHN', 'TWN', 'RUS'].includes(f.properties.ADM0_A3));
+  return `<defs><clipPath id="nbc"><circle cx="32" cy="31" r="17"/></clipPath></defs><g clip-path="url(#nbc)">${fs.filter(f => f.properties.ADM0_A3 !== 'JPN').map(f => `<path d="${path(f)}" ${sl(c, .8)}/>`).join('')}${fs.filter(f => f.properties.ADM0_A3 === 'JPN').map(f => `<path d="${path(f)}" fill="${c}"/>`).join('')}</g>`;
+}
+let wBadgeLoad = false;
+function loadWorldForBadges() { if (wBadgeLoad) return; wBadgeLoad = true; loadWorld().then(() => { if (tab === 'badge') renderBadges(); }).catch(() => {}); }
 const ART = {
+  plane: c => `<g transform="translate(32 30) rotate(-35)"><path d="M0 -12 C1.5 -12 1.8 -9 1.8 -6 L1.8 -2 L11 4 L11 6.5 L1.8 3.5 L1.4 9 L4.5 11.5 L4.5 13 L0 11.8 L-4.5 13 L-4.5 11.5 L-1.4 9 L-1.8 3.5 L-11 6.5 L-11 4 L-1.8 -2 L-1.8 -6 C-1.8 -9 -1.5 -12 0 -12Z" fill="${c}"/></g>`,
+  globe: c => `<g transform="translate(32 25)"><circle r="7" ${sl(c, 1.2)}/><ellipse rx="3" ry="7" ${sl(c, .9)}/><path d="M-7 0 L7 0 M-6 -3.5 L6 -3.5 M-6 3.5 L6 3.5" ${sl(c, .8)}/></g>`,
+  neighbors: c => neighborsArt(c),
   cam: c => `<g transform="translate(32 29)"><rect x="-9" y="-6" width="18" height="13" rx="2" ${sl(c, 1.6)}/><circle r="3.6" ${sl(c, 1.6)}/></g>`,
   tanada: c => `<g transform="translate(0 -4.5) scale(.82) translate(7 7)"><path d="M33 23 L37.5 18 L42 23" ${sl(c, 1.5)}/><path d="M34 23 L34 27 L41 27 L41 23" ${sl(c, 1.3)}/><path d="M15 29 Q32 26 49 29" ${sl(c, 1.4)}/><path d="M15 34 Q32 31 49 34" ${sl(c, 1.4)}/></g>`,
   mount: c => `<path d="M19 39 L30 21 L41 39" ${sl(c, 1.6)}/><path d="M26.5 26.5 L30 21 L33.5 26.5 L31.7 25.3 L30 26.8 L28.3 25.3 Z" fill="${c}"/><path d="M41 39 L41 35 M38 36 L41 29 L44 36 Z" fill="${c}" stroke="${c}" stroke-width=".8"/><path d="M46 39 L46 36 M43.8 37 L46 31.5 L48.2 37 Z" fill="${c}" stroke="${c}" stroke-width=".8"/><path d="M15 39.5 L50 39.5" ${sl(c, 1.1)}/>`,
@@ -1106,6 +1220,8 @@ function stampSVG(b, on, k = 0) {
   let c = INK[b.ink || b.page], inner = '', lbl = b.lbl || '';
   if (b.pref) { const pv = prefV.get(pc(b.pref)); if (pv && !coverOf(pv)) c = pv.color; const d = prefShape(b.pref); inner = d ? `<path d="${d}" fill="${c}" opacity=".9"/>` : ft(c, 32, 35, PREFS[b.pref - 1].replace(/[都府県]$/, ''), 11, 'Noto Serif JP', 900); }
   else if (b.region !== undefined) { const r = regionShape(b.region); inner = r ? `<path d="${r.d}" fill="${c}" opacity=".9"/>${r.oki ? `<line x1="34" y1="44" x2="47" y2="29" stroke="${c}" stroke-width=".9"/><path d="${r.oki}" fill="${c}" opacity=".9"/>` : ''}` : ft(c, 32, 36.5, lbl.slice(0, 2), 14, 'Noto Serif JP', 900); }
+  else if (b.cont) { const d = contShape(b.cont); inner = d ? `<path d="${d}" fill="${c}" opacity=".9"/>` : ft(c, 32, 36, (b.lbl || '').slice(0, 3), 11, 'Noto Serif JP', 900); }
+  else if (b.art === 'globe') inner = ART.globe(c) + ft(c, 32, 43, b.v, b.v.length > 2 ? 11 : 13);
   else if (b.art === 'arr') inner = `<g transform="translate(32 29) rotate(${b.rot})"><path d="M0 -10 L5 4 L0 1 L-5 4 Z" fill="${c}"/></g>`;
   else if (b.art === 'tanada') inner = ART.tanada(c) + ft(c, 32, 43.5, b.v, b.v.length > 2 ? 11 : 13);
   else if (b.art === 'top') inner = `<text x="32" y="28" text-anchor="middle" font-family="DM Serif Display" font-size="7" letter-spacing=".5" fill="${c}">TOP</text>` + ft(c, 32, 41, b.v, 15);
@@ -1238,7 +1354,7 @@ function rpPause() { clearInterval(RP.timer); RP.timer = null; if ($('#rplay')) 
 function openReplay() {
   closeSheet(); search('');
   RP.prevMode = mode;
-  if (mode !== 'muni') { mode = 'muni'; showModeSw(); }
+  if (mode !== 'muni') setMode('muni');
   [...photoLayers.keys()].forEach(clearPhotoLayer);
   const firsts = [...visits.values()].map(v => v.first);
   RP.anchor = new Date(firsts.length ? Math.max(...firsts) : Date.now());
@@ -1265,7 +1381,7 @@ $('#rspd').onclick = () => { RP.speed = RP.speed === 1 ? 2 : RP.speed === 2 ? 4 
 /* ---------- 写真のくり抜き調整 ---------- */
 const AD = {code: null, s: 1, ox: 0, oy: 0, fit: 1, url: null, box: null, path: '', drag: null, pts: new Map(), pinch: null};
 function adjShape(code) {
-  const ls = isPref(code) ? prefLayers(code) : (layers.get(code) || []);
+  const ls = isWorld(code) ? (wLayers.get(code) || []) : isPref(code) ? prefLayers(code) : (layers.get(code) || []);
   const rings = [];
   for (const l of ls) { const g = l.feature.geometry; const ps = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []; ps.forEach(p => rings.push(p[0])); }
   if (!rings.length) return null;
@@ -1331,6 +1447,7 @@ async function mergeWards() {
   try {
     for (const v of await getAll('visits')) { v.color = migrate(v.color); visits.set(v.code, v); }
     for (const v of await getAll('prefs')) { v.color = migrate(v.color); prefV.set(v.code, v); }
+    for (const v of await getAll('world')) worldV.set(v.code, v);
     photos = await getAll('photos');
     for (const m of await getAll('memos')) memos.set(m.code, m);
     for (const b of await getAll('badges')) {
@@ -1342,6 +1459,7 @@ async function mergeWards() {
   await mergeWards();
   { const h = document.querySelector('header'), setH = () => document.documentElement.style.setProperty('--hh', h.offsetHeight + 'px'); setH(); const hro = new ResizeObserver(setH); hro.observe(h); }
   showModeSw();
+  if (mode === 'world') showWorldLayers(true);
   renderCounts();
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
   loadOutline();
