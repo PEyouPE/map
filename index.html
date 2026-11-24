@@ -223,6 +223,13 @@ body.replaying .mode,body.replaying .rbtn,body.replaying nav{display:none!import
 #bdlg .big{width:150px;height:150px;margin:0 auto 6px;display:block}
 #bdlg h4{font:700 19px/1.35 var(--jserif);margin:4px 0}
 #bdlg p{margin:4px 0 0;font-size:14px;color:var(--sub)}
+#bdlg{max-height:88vh;overflow-y:auto}
+.places{text-align:left;margin-top:14px;border-top:1px solid var(--line);padding-top:6px}
+.places .chips{padding:0}.places .chip small.nt{font-size:10px;color:var(--acc);margin-left:2px}
+.ph-h{font-size:12px!important;color:var(--sub);margin:8px 0 6px!important}
+.bph{display:block;width:100%;max-height:180px;object-fit:cover;border-radius:4px;margin-bottom:6px}
+.prog{margin-top:12px!important;font:600 18px var(--serif)!important;color:var(--ink)!important}.prog span{font:400 12px "Noto Sans JP",sans-serif;color:var(--sub);margin-left:6px}
+.ent p small.pl{color:var(--acc)}
 #bdlg .when{font:600 15px var(--serif);color:var(--ink);margin-top:10px}
 </style>
 </head>
@@ -843,6 +850,17 @@ function openSheet(code) {
   $('#sheet').classList.add('open');
 }
 const closeSheet = () => { flushMemo(); $('#sheet').classList.remove('open'); current = null; };
+/* 下にスワイプして閉じる */
+{
+  const sh = $('#sheet'); let sw = null;
+  sh.addEventListener('touchstart', e => { if (!sh.classList.contains('open') || e.touches.length > 1 || e.target.closest('textarea,input') || sh.scrollTop > 0) { sw = null; return; } sw = {y: e.touches[0].clientY, t: Date.now(), dy: 0}; }, {passive: true});
+  sh.addEventListener('touchmove', e => { if (!sw) return; const dy = e.touches[0].clientY - sw.y; if (dy <= 0 && !sw.dy) { sw = null; return; } sw.dy = Math.max(0, dy); if (sw.dy > 4) { e.preventDefault(); sh.style.transition = 'none'; sh.style.transform = `translateY(${sw.dy}px)`; } }, {passive: false});
+  const end = () => { if (!sw) return; const {dy, t} = sw; sw = null; const fast = dy > 40 && dy / (Date.now() - t) > .6;
+    sh.style.transition = 'transform .2s ease';
+    if (dy > sh.offsetHeight * .25 || fast) { sh.style.transform = 'translateY(105%)'; setTimeout(() => { sh.style.transition = ''; sh.style.transform = ''; closeSheet(); }, 200); }
+    else { sh.style.transform = ''; setTimeout(() => { sh.style.transition = ''; }, 200); } };
+  sh.addEventListener('touchend', end); sh.addEventListener('touchcancel', end);
+}
 /* ひとことメモ（塗っていない市区町村にも残せる） */
 const memos = new Map();
 let memoTimer = null, memoPending = null;
@@ -1105,7 +1123,7 @@ REGIONS.forEach(([n, [a, b]], k) => B.push({id: 'r' + k, page: 'rg', name: `${n}
 [['j', '日本', [[1, '稚内市'], [1, '根室市'], [47, '与那国町'], [47, '竹富町']]], ['h', '本州', [[2, '大間町'], [3, '宮古市'], [35, '下関市'], [30, '串本町']]],
  ['k', '九州', [[40, '北九州市'], [44, '佐伯市'], [42, '佐世保市'], [46, '南大隅町']]], ['s', '四国', [[37, '高松市'], [36, '阿南市'], [38, '伊方町'], [39, '土佐清水市']]],
  ['d', '北海道', [[1, '稚内市'], [1, '根室市'], [1, 'せたな町'], [1, '松前町']]]]
-  .forEach(([p, area, list]) => ['最北端', '最東端', '最西端', '最南端'].forEach((nm, i) => B.push({id: p + i, page: 'ed', name: area + nm, art: 'arr', rot: [0, 90, 270, 180][i], lbl: area + nm, cond: `${list[i][1]}を塗る`, hint: `${area}の端っこを…`, test: () => at(...list[i])})));
+  .forEach(([p, area, list]) => ['最北端', '最東端', '最西端', '最南端'].forEach((nm, i) => B.push({id: p + i, page: 'ed', place: list[i], name: area + nm, art: 'arr', rot: [0, 90, 270, 180][i], lbl: area + nm, cond: `${list[i][1]}を塗る`, hint: `${area}の端っこを…`, test: () => at(...list[i])})));
 /* Famous places */
 [['f0', '日本三景', 'torii', [[4, '松島町'], [26, '宮津市'], [34, '廿日市市']]], ['f1', '日本三名泉', 'oke', [[10, '草津町'], [21, '下呂市'], [28, '神戸市']]], ['f2', '日本三大夜景', 'night', [[1, '函館市'], [28, '神戸市'], [42, '長崎市']]],
  ['f3', '日本三名園', 'garden', [[17, '金沢市'], [33, '岡山市'], [8, '水戸市']]], ['f4', '日本三大秘境', 'gassho', [[21, '白川村'], [36, '三好市'], [45, '椎葉村']]],
@@ -1113,17 +1131,17 @@ REGIONS.forEach(([n, [a, b]], k) => B.push({id: 'r' + k, page: 'rg', name: `${n}
  ['f7', '日本三名城', 'castle', [[23, '名古屋市'], [27, '大阪市'], [43, '熊本市']]],
  ['f8', '現存12天守', 'twelve', [[2, '弘前市'], [20, '松本市'], [23, '犬山市'], [18, '坂井市'], [25, '彦根市'], [28, '姫路市'], [32, '松江市'], [33, '高梁市'], [37, '丸亀市'], [38, '松山市'], [38, '宇和島市'], [39, '高知市']]],
  ['f9', '日本三大花火大会', 'hanabi', [[5, '大仙市'], [15, '長岡市'], [8, '土浦市']]], ['f10', '日本三大朝市', 'asaichi', [[17, '輪島市'], [12, '勝浦市'], [21, '高山市']]]]
-  .forEach(([id, nm, art, list]) => B.push({id, page: 'fm', name: nm, art, lbl: nm, cond: list.map(x => x[1]).join('・') + 'をすべて塗る', hint: '「日本三大〇〇」の場所を…', test: () => allAt(list)}));
+  .forEach(([id, nm, art, list]) => B.push({id, page: 'fm', places: list, name: nm, art, lbl: nm, cond: list.map(x => x[1]).join('・') + 'をすべて塗る', hint: '「日本三大〇〇」の場所を…', test: () => allAt(list)}));
 /* No.1 */
 [['n0', '日本一大きい市', '最大', '面積日本一', 21, '高山市'], ['n1', '日本一小さい村', '最小', '面積最小', 16, '舟橋村'], ['n2', '人口日本一の市', '最多', '人口日本一', 14, '横浜市'], ['n3', '人口がいちばん少ない村', '最少', '人口最少', 13, '青ヶ島村']]
-  .forEach(([id, nm, tx, lbl, p, t]) => B.push({id, page: 'no', name: nm, tx, lbl, cond: `${t}を塗る`, hint: '日本一の市町村を…', test: () => at(p, t)}));
+  .forEach(([id, nm, tx, lbl, p, t]) => B.push({id, page: 'no', place: [p, t], name: nm, tx, lbl, cond: `${t}を塗る`, hint: '日本一の市町村を…', test: () => at(p, t)}));
 /* Names */
 const ANIMAL = /[鹿熊鶴亀犬猫馬牛羊猿鷹鷲鳩鶏雉鴨燕鳥竜龍虎狐狸兎蛇象鷺鴻鳳蝶蛍]/, NUM = /[一二三四五六七八九十百千万]/, COLOR = /[赤青白黒緑紫金銀茶黄紅朱藍桃]/, FISH = /[魚鮭鯖鮫鯵鰺鯛鮎鰹鯨鱒鰻鯉鰐]/;
 [['nm0', '「山」の字', '山', /山/, 10], ['nm1', '「川」の字', '川', /川/, 10], ['nm2', '「島」の字', '島', /島/, 10], ['nm3', '動物の名前', '鹿', ANIMAL, 10], ['nm4', '数字の名前', '一二三', NUM, 10], ['nm5', '色の名前', '色', COLOR, 10], ['nm7', '魚の名前', '魚', FISH, 5]]
-  .forEach(([id, nm, tx, re, n]) => B.push({id, page: 'nm', name: nm, tx, lbl: `${n}か所`, cond: `${nm.replace(/「|」/g, '')}が入る市区町村を${n}か所塗る`, hint: '名前に共通点のある市区町村を…', test: () => countChars(re) >= n}));
+  .forEach(([id, nm, tx, re, n]) => B.push({id, page: 'nm', re, need: n, name: nm, tx, lbl: `${n}か所`, cond: `${nm.replace(/「|」/g, '')}が入る市区町村を${n}か所塗る`, hint: '名前に共通点のある市区町村を…', test: () => countChars(re) >= n}));
 B.push({id: 'nm6', page: 'nm', name: '東西南北', art: 'grid', cond: '「東」「西」「南」「北」がつく市区町村をそれぞれ1か所ずつ塗る', hint: '名前に方角が…', test: () => ['東', '西', '南', '北'].every(ch => countChars(new RegExp(ch)) >= 1)});
 [['nm8', 'ひらがな 10か所', 'かな', 'hira'], ['nm9', '漢字1文字 10か所', '一字', 'one'], ['nm10', '4文字以上 10か所', '4文字', 'long']]
-  .forEach(([id, nm, tx, cid]) => { const c = COLLECTIONS.find(c => c.id === cid); B.push({id, page: 'nm', name: nm, tx, lbl: '10か所', cond: `「${c.name}」の市区町村を10か所塗る`, hint: '名前に共通点のある市区町村を…', test: () => visitedBase().filter(b => c.rule(b)).length >= 10}); });
+  .forEach(([id, nm, tx, cid]) => { const c = COLLECTIONS.find(c => c.id === cid); B.push({id, page: 'nm', rule: c.rule, name: nm, tx, lbl: '10か所', cond: `「${c.name}」の市区町村を10か所塗る`, hint: '名前に共通点のある市区町村を…', test: () => visitedBase().filter(b => c.rule(b)).length >= 10}); });
 B.push(...[]);
 /* Collections */
 const colDone = (x, id) => { const st = x.cols && x.cols.find(s => s.c.id === id); return !!st && st.N > 0 && st.n === st.N; };
@@ -1283,6 +1301,61 @@ function stampSVG(b, on, k = 0) {
   return `<svg class="stamp" viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(${ROT[k % ROT.length]} 32 32)" opacity=".9"><circle cx="32" cy="32" r="27" fill="none" stroke="${c}" stroke-width="2.2"/><circle cx="32" cy="32" r="23" fill="none" stroke="${c}" stroke-width=".8"/>${inner}${lbl ? ft(c, 32, ly, lbl.slice(0, 8), lfs, 'Noto Sans JP', 600) : ''}<text x="32" y="${b.page === 'fm' ? 12.5 : 14}" text-anchor="middle" font-family="Inter" font-size="5" letter-spacing=".5" fill="${c}">NURI MAP</text></g></svg>`;
 }
 
+
+/* ---- スタンプを「どこで押したか」 ---- */
+const vSorted = () => [...visits.values()].sort((a, b) => a.first - b.first);
+const sameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
+const visitedIn = codes => codes.filter(c => c && visits.has(c)).sort((a, b) => visits.get(a).first - visits.get(b).first);
+const wSorted = pred => [...worldV.values()].filter(pred || (() => true)).sort((a, b) => a.first - b.first).map(v => v.code);
+const pSorted = pred => [...prefV.values()].filter(pred || (() => true)).sort((a, b) => a.first - b.first).map(v => v.code);
+function nthInfo(list, n, unit) { // list: 塗った順のレコード
+  const hit = list[n - 1]; if (!hit) return {codes: [], have: list.length, need: n};
+  const day = list.filter(v => sameDay(v.first, hit.first)).map(v => v.code).filter(c => c !== hit.code);
+  return {codes: [hit.code, ...day], notes: {[hit.code]: `${n}${unit}目`}, have: list.length, need: n, cap: 'この日に塗った場所'};
+}
+function bInfo(b) {
+  const id = b.id; let m;
+  if ((m = id.match(/^m(\d+)$/))) return nthInfo(vSorted(), +m[1], 'か所');
+  if (id === 'mall') { const L = vSorted(); return L.length >= meta.size && meta.size ? nthInfo(L, meta.size, 'か所') : {codes: [], have: L.length, need: meta.size}; }
+  if ((m = id.match(/^p(\d+)$/))) { const L = pSorted(); return {codes: L.slice(0, +m[1]), have: L.length, need: +m[1], notes: L[+m[1] - 1] ? {[L[+m[1] - 1]]: `${m[1]}つ目`} : {}}; }
+  if ((m = id.match(/^v(\d+|all)$/))) { const vs = new Set(villages()), L = vSorted().filter(v => vs.has(v.code)), n = m[1] === 'all' ? vs.size : +m[1]; return nthInfo(L, n, 'か所'); }
+  if ((m = id.match(/^ph(\d+)$/))) { const L = [...photos].sort((a, b) => a.id - b.id), ph = L[+m[1] - 1]; return {codes: ph ? [ph.code] : [], photo: ph, have: L.length, need: +m[1], cap: ph ? `${m[1]}枚目の写真` : ''}; }
+  if (id === 'phjp') { const L = pSorted(v => coverOf(v)); return {codes: L, have: L.length, need: 47}; }
+  if ((m = id.match(/^af(\d+)_(\d+)$/))) { const f = +m[1] / +m[2]; let all = 0; areas.forEach(a => all += a); let acc = 0, hit = null; for (const v of vSorted()) { acc += areas.get(v.code) || 0; if (all && acc / all >= f) { hit = v; break; } }
+    let cur = 0; visits.forEach((v, c) => cur += areas.get(c) || 0);
+    return {codes: hit ? [hit.code] : [], notes: hit ? {[hit.code]: 'ここで達成'} : {}, have: Math.round(cur), need: Math.round(all * f), unit: 'km²'}; }
+  if ((m = id.match(/^r(\d)$/))) { const [, [a, z]] = REGIONS[+m[1]]; const all = Array.from({length: z - a + 1}, (_, k) => pc(a + k)); const L = pSorted(v => all.includes(v.code)); return {codes: L, have: L.length, need: all.length}; }
+  if (b.page === 'ed' || b.page === 'no') { const c = findCode(...b.place); return {codes: c && visits.has(c) ? [c] : [], have: c && visits.has(c) ? 1 : 0, need: 1}; }
+  if (b.page === 'fm') { const cs = b.places.map(([p, n]) => findCode(p, n)); return {codes: visitedIn(cs), have: visitedIn(cs).length, need: cs.length}; }
+  if (b.re) { const L = vSorted().filter(v => b.re.test(baseName(v.name || ''))).map(v => v.code); return {codes: L, have: L.length, need: b.need, split: b.need}; }
+  if (id === 'nm6') { const notes = {}, codes = []; let have = 0; for (const ch of ['東', '西', '南', '北']) { const v = vSorted().find(v => baseName(v.name || '').includes(ch)); if (v) { have++; if (!codes.includes(v.code)) codes.push(v.code); notes[v.code] = (notes[v.code] ? notes[v.code] + '・' : '') + ch; } } return {codes, notes, have, need: 4}; }
+  if (b.rule) { const L = vSorted().filter(v => b.rule(baseName(v.name || ''))).map(v => v.code); return {codes: L, have: L.length, need: 10, split: 10}; }
+  if (b.page === 'co') {
+    if (id === 'umi') { const all = [9, 10, 11, 19, 20, 21, 25, 29].map(pc), L = pSorted(v => all.includes(v.code)); return {codes: L, have: L.length, need: 8}; }
+    if (id === 'big3') { const tk = vSorted().find(v => v.code >= '13101' && v.code <= '13123'); const cs = [tk && tk.code, '27100', '23100'].filter(c => c && visits.has(c)); return {codes: cs, have: cs.length, need: 3}; }
+    if (id === 't23') { const L = visitedIn(Array.from({length: 23}, (_, i) => String(13101 + i).padStart(5, '0'))); return {codes: L, have: L.length, need: 23}; }
+    if (id === 'cdes2' || id === 'cdes') { const L = visitedIn(DESC); return {codes: L, have: L.length, need: id === 'cdes2' ? 10 : 20}; }
+    if (id === 'ctop10' || id === 'ctop') { const n = id === 'ctop10' ? 10 : 20, all = TOP20.slice(0, n).map(([p, x]) => findCode(p, x)), L = visitedIn(all); return {codes: L, have: L.length, need: n}; }
+    const c = COLLECTIONS.find(c => 'c' + c.id === id); if (c) { const st = colStats().find(x => x.c === c); const L = visitedIn(st ? st.mem : []); return {codes: L, have: L.length, need: st ? st.N : 0}; }
+  }
+  if (b.pref) { const i = b.pref, L = vSorted().filter(v => +v.code.slice(0, 2) === i), t = prefTotals()[i]; const last = L[L.length - 1];
+    return {codes: last && L.length >= t ? [last.code] : [], notes: last ? {[last.code]: 'ここで制覇'} : {}, have: L.length, need: t, cap: `${PREFS[i - 1]}の市区町村 全${t}か所`}; }
+  if (b.page === 'wo') {
+    if (id === 'w1') { const L = wSorted(v => v.code !== 'WJPN'); return {codes: L.slice(0, 1), have: L.length ? 1 : 0, need: 1}; }
+    if ((m = id.match(/^wn(\d+)$/))) { const L = wSorted(), n = +m[1]; return {codes: L.slice(0, n), notes: L[n - 1] ? {[L[n - 1]]: `${n}か国目`} : {}, have: L.length, need: n}; }
+    if (b.cont === 'ALL') { const codes = []; let have = 0; for (const c of CONT6) { const f = wSorted(v => v.cont === c)[0]; if (f) { have++; codes.push(f); } } return {codes, have, need: 6}; }
+    if (b.cont) { const L = wSorted(v => v.cont === b.cont); return {codes: L, have: L.length ? 1 : 0, need: 1}; }
+    const list = id === 'wg7' ? ['JPN', 'USA', 'GBR', 'FRA', 'DEU', 'ITA', 'CAN'] : ['KOR', 'CHN', 'TWN', 'RUS'];
+    const L = list.map(a => 'W' + a).filter(c => worldV.has(c)); return {codes: L, have: L.length, need: list.length};
+  }
+  return {codes: [], have: 0, need: 0};
+}
+function bShort(b) {
+  const I = bInfo(b); if (I.photo) return `${label(I.photo.code)}で撮った写真`;
+  const cs = I.split ? I.codes.slice(0, I.split) : I.codes; if (!cs.length) return '';
+  return cs.slice(0, 2).map(label).join('・') + (cs.length > 2 ? `ほか${cs.length - 2}か所` : '');
+}
+
 /* ---- 獲得ポップアップ ---- */
 let popQ = [], popI = 0;
 function queuePopups(list) { const open = popQ.length && popI < popQ.length; popQ = open ? popQ.concat(list) : list.slice(); if (!open) { popI = 0; showPop(); } else updPopK(); }
@@ -1313,7 +1386,7 @@ function renderBadges() {
     else {
       const sorted = got.sort((a, b) => earned.get(b.id) - earned.get(a.id)), years = new Map();
       for (const b of sorted) { const d = new Date(earned.get(b.id)), y = d.getFullYear(), key = d.toDateString(); if (!years.has(y)) years.set(y, new Map()); const ym = years.get(y); if (!ym.has(key)) ym.set(key, {d, list: []}); ym.get(key).list.push(b); }
-      body = [...years].map(([y, days]) => `<div class="yr"><b>${y}</b><span>${[...days.values()].reduce((s, x) => s + x.list.length, 0)}個獲得</span></div>${[...days.values()].map(({d, list}) => `<div class="day"><div class="dt"><i>${MO[d.getMonth()]}</i><b>${String(d.getDate()).padStart(2, '0')}</b><span>${WD[d.getDay()]}</span></div><div class="ents">${list.map(b => `<button class="ent" data-badge="${b.id}">${stampSVG(b, true, idx.get(b.id))}<p>${esc(b.name)}<small>${esc(b.cond)}</small></p></button>`).join('')}</div></div>`).join('')}`).join('');
+      body = [...years].map(([y, days]) => `<div class="yr"><b>${y}</b><span>${[...days.values()].reduce((s, x) => s + x.list.length, 0)}個獲得</span></div>${[...days.values()].map(({d, list}) => `<div class="day"><div class="dt"><i>${MO[d.getMonth()]}</i><b>${String(d.getDate()).padStart(2, '0')}</b><span>${WD[d.getDay()]}</span></div><div class="ents">${list.map(b => `<button class="ent" data-badge="${b.id}">${stampSVG(b, true, idx.get(b.id))}<p>${esc(b.name)}<small>${esc(b.cond)}</small>${(() => { let t = ''; try { t = bShort(b); } catch (e) {} return t ? `<small class="pl">${esc(t)}</small>` : ''; })()}</p></button>`).join('')}</div></div>`).join('')}`).join('');
     }
     body = `<div class="diary">${body}</div>`;
   } else {
@@ -1328,12 +1401,31 @@ function renderBadges() {
   <div class="itabs" role="tablist"><button role="tab" data-bview="diary" aria-selected="${badgeView === 'diary'}">Diary</button><button role="tab" data-bview="book" aria-selected="${badgeView === 'book'}">Stamp book</button></div>
   <div class="itab-body">${body}</div>`;
 }
-function openBadge(id) {
-  const b = B.find(x => x.id === id); if (!b) return;
-  const on = earned.has(id), vis = on || b.show;
-  $('#bdlgBody').innerHTML = `<div class="big">${stampSVG(b, on, 1)}</div><h4>${vis ? esc(b.name) : '？？？'}</h4><p>${vis ? esc(b.cond) : esc(b.hint || '条件はひみつです')}</p>${on ? `<p class="when">${fmt(earned.get(id))} 獲得</p>` : '<p style="margin-top:10px">まだ獲得していません</p>'}`;
-  $('#bdlg').showModal();
+let bdlgAll = false;
+function placesHTML(b, I) {
+  const chip = c => `<button class="chip" data-go="${c}">${isWorld(c) || isPref(c) ? '' : `<i class="dot" style="${visits.has(c) ? swatchCSS(visits.get(c)) : ''}"></i>`}${esc(label(c))}${I.notes && I.notes[c] ? `<small class="nt">${esc(I.notes[c])}</small>` : ''}</button>`;
+  let main = I.split ? I.codes.slice(0, I.split) : I.codes, rest = I.split ? I.codes.slice(I.split) : [];
+  const lim = bdlgAll ? 1e9 : 10, more = Math.max(0, main.length - lim) + (bdlgAll ? 0 : rest.length > 0 && main.length > lim ? rest.length : 0);
+  let h = `<p class="ph-h">${esc(I.cap || '押した場所')}</p>${I.photo ? `<img class="bph" src="${thumbURL(I.photo)}" alt="">` : ''}<div class="chips">${main.slice(0, lim).map(chip).join('')}</div>`;
+  if (rest.length && (bdlgAll || main.length <= lim)) h += `<p class="ph-h">そのあとに行った場所</p><div class="chips">${rest.slice(0, bdlgAll ? 1e9 : 10).map(chip).join('')}</div>`;
+  const hidden = Math.max(0, main.length - lim) + (rest.length > 10 && !bdlgAll ? rest.length - 10 : 0);
+  if (hidden && !bdlgAll) h += `<button class="btn" data-more="1" style="margin-top:6px">ほか${hidden}か所を表示</button>`;
+  return h;
 }
+function openBadge(id, keep) {
+  const b = B.find(x => x.id === id); if (!b) return;
+  if (!keep) bdlgAll = false;
+  const on = earned.has(id), vis = on || b.show;
+  let I = {codes: []}; try { I = bInfo(b); } catch (e) {}
+  const prog = !on && I.need ? `<p class="prog">${I.unit ? `あと約${Math.max(0, I.need - I.have).toLocaleString()}${I.unit}` : `あと${Math.max(1, I.need - I.have)}${b.page === 'wo' ? '' : b.page === 'ph' ? '枚' : ''}`}<span>（${I.have.toLocaleString()} / ${I.need.toLocaleString()}${I.unit || ''}）</span></p>` : '';
+  $('#bdlgBody').innerHTML = `<div class="big">${stampSVG(b, on, 1)}</div><h4>${vis ? esc(b.name) : '？？？'}</h4><p>${vis ? esc(b.cond) : esc(b.hint || '条件はひみつです')}</p>${on ? `<p class="when">${fmt(earned.get(id))} 獲得</p>` : '<p style="margin-top:10px">まだ獲得していません</p>'}`;
+  $('#bdlgBody').insertAdjacentHTML('beforeend', on && (I.codes.length || I.photo) ? `<div class="places" data-bid="${id}">${placesHTML(b, I)}</div>` : prog);
+  if (!$('#bdlg').open) $('#bdlg').showModal();
+}
+$('#bdlgBody').addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g) { $('#bdlg').close(); go(g.dataset.go); return; }
+  const m = e.target.closest('[data-more]'); if (m) { bdlgAll = true; const pl = e.target.closest('.places'); openBadge(pl.dataset.bid, true); }
+});
 $('#p-badge').addEventListener('click', e => {
   const v = e.target.closest('[data-bview]'); if (v) { badgeView = v.dataset.bview; return renderBadges(); }
   const b = e.target.closest('[data-badge]'); if (b) openBadge(b.dataset.badge);
